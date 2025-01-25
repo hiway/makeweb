@@ -1,6 +1,6 @@
 class defaults:
     remove_first_underscore = True
-    replace_single_underscore = False
+    replace_single_underscore = True
     replace_double_underscore = True
     replace_className = True
     replace_cls = True

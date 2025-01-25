@@ -21,7 +21,7 @@ def test_validate_html():
 
 def test_defaults():
     assert defaults.remove_first_underscore is True
-    assert defaults.replace_single_underscore is False
+    assert defaults.replace_single_underscore is True
     assert defaults.replace_double_underscore is True
     assert defaults.replace_className is True
     assert defaults.replace_cls is True
@@ -53,10 +53,10 @@ def test_fix_attribute():
     assert fix_attribute("_input") == "input"
     assert fix_attribute("left__align") == "left-align"
     assert fix_attribute("__moz__column__count") == "-moz-column-count"
-    assert fix_attribute("snake_case") == "snake_case"
+    assert fix_attribute("snake_case") == "snake-case"
 
     defaults.replace_double_underscore = False
-    assert fix_attribute("__keep_one") == "_keep_one"
+    assert fix_attribute("__keep_one") == "-keep-one"
 
     defaults.replace_double_underscore = True  # reset
     defaults.replace_single_underscore = True
@@ -337,12 +337,12 @@ def test_js_script_embed():
 
 
 def test_import_deprecated_tag_warning():
-    with pytest.warns(UserWarning):
+    with pytest.raises(ImportError):
         from makeweb.html import blink
 
 
 def test_import_unknown_tag_warning():
-    with pytest.warns(UserWarning):
+    with pytest.raises(ImportError):
         from makeweb.html import meh
 
 
