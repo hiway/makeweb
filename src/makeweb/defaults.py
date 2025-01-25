@@ -1,7 +1,7 @@
 class defaults:
     remove_first_underscore = True
     replace_single_underscore = True
-    replace_double_underscore = True
+    replace_double_underscore = False
     replace_className = True
     replace_cls = True
     # https://html.spec.whatwg.org/multipage/syntax.html#the-doctype
