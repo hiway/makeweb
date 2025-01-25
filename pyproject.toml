@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "makeweb"
-version = "0.2.1"
+version = "0.2.2"
 description = "Make interactive web apps using good ol' HTML, CSS and a sprinkling of JavaScript — in Python."
 authors = ["Harshad Sharma <harshad@sharma.io>"]
 license = "MIT"
