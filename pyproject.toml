@@ -25,7 +25,7 @@ packages = [{ include = "makeweb", from = "src" }]
 [tool.poetry.dependencies]
 # Support Python versions until 3.14 where ast.Str is removed
 # which is currently used in metapensiero/pj/transformations...
-python = ">=3.9,<3.14"
+python = ">=3.9"
 
 [tool.poetry.group.dev.dependencies]
 jsmin = "^3.0.1"
