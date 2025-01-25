@@ -48,13 +48,14 @@ app = Flask(__name__)
 #   - `doc = Doc()` before calling any tags.
 #   - `with` is your friend, so are function calls that look like tags.
 
+
 # Set up a route
-@app.route('/')
+@app.route("/")
 def index():
     # First, define a variable named `doc` as an  instance of `Doc`.
     # (it is important, MakeWeb will fail if you call a tag
     # before defining a doc first).
-    doc = Doc('html')
+    doc = Doc("html")
     # We also pass doctype='html' to tell Doc that
     # this is a complete html document
     # and we expect <!doctype html> and <html>, </html> tags
@@ -64,7 +65,7 @@ def index():
 
     # Create an h1 tag inside body.
     with body():
-        h1('Hello, World Wide Web!')
+        h1("Hello, World Wide Web!")
 
     # Render the doc by calling str() on it
     # and return the generated html to browser.

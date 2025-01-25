@@ -34,7 +34,7 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         secondsName: 's',
         isStop: false,
         template: '<span>NUMBER<i>LETTER</i></span> ',
-        beforeCreate: function beforeCreate() {}
+        beforeCreate: function beforeCreate() { }
       }, userSettings);
 
       this.timer();
@@ -46,13 +46,13 @@ function _classCallCheck(instance, Constructor) { if (!(instance instanceof Cons
         var _this = this;
 
         var _settings = this.settings,
-            date = _settings.date,
-            daysName = _settings.daysName,
-            hoursName = _settings.hoursName,
-            minutesName = _settings.minutesName,
-            secondsName = _settings.secondsName,
-            isStop = _settings.isStop,
-            beforeCreate = _settings.beforeCreate;
+          date = _settings.date,
+          daysName = _settings.daysName,
+          hoursName = _settings.hoursName,
+          minutesName = _settings.minutesName,
+          secondsName = _settings.secondsName,
+          isStop = _settings.isStop,
+          beforeCreate = _settings.beforeCreate;
 
 
         var countDate = new Date(date).getTime();

@@ -23,6 +23,6 @@ Generate HTML from fake blog post data and save in a directory as individual fil
 ### `static/`
 
 Some of the examples use static assets such as css and javascript.
-These are work shared by generous individuals 
-under Open Source licenses, the source/credits for each file 
+These are work shared by generous individuals
+under Open Source licenses, the source/credits for each file
 are included with the file as a comment.

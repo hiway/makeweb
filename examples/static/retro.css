@@ -12,6 +12,7 @@ pre {
 }
 
 @media print {
+
   *,
   *:before,
   *:after {

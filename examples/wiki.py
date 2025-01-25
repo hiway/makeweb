@@ -64,14 +64,31 @@ from makeweb import (
     # First, the HTML Document class...
     Doc,
     # Then tags needed to build the `head` section.
-    head, title, meta, link,
+    head,
+    title,
+    meta,
+    link,
     # Commonly used tags for the `body` section.
-    body, nav, hr, div, ul, li, a,
+    body,
+    nav,
+    hr,
+    div,
+    ul,
+    li,
+    a,
     # Tags for content.
-    h1, h3, h5, span, p,
+    h1,
+    h3,
+    h5,
+    span,
+    p,
     # Tags for forms. Since `input` is a Python built-in name,
     # we can avoid clashes by importing with an underscore before its name.
-    form, label, _input, textarea, button,
+    form,
+    label,
+    _input,
+    textarea,
+    button,
 )
 
 # And that concludes our imports!
@@ -84,27 +101,27 @@ from makeweb import (
 ##### Defaults
 
 # Get current path as base.
-BASE_DIR = os.path.abspath('.')
+BASE_DIR = os.path.abspath(".")
 
 # Use 'static' directory under base to serve css.
-STATIC_DIR = os.path.join(BASE_DIR, 'static/')
+STATIC_DIR = os.path.join(BASE_DIR, "static/")
 
 # Our TinyDB database is a single json file!
-DB_PATH = os.path.join(BASE_DIR, 'wiki.json')
+DB_PATH = os.path.join(BASE_DIR, "wiki.json")
 
 # Setting HTML META tags here, keeps code uncluttered when there are many.
 META = {
-    'viewport': 'width=device-width, initial-scale=1',
+    "viewport": "width=device-width, initial-scale=1",
 }
 
 # Since we need a topic, any topic to begin with,
 # let us get creative and use...
-TOPIC = 'home'
+TOPIC = "home"
 
 # Also define the navigation urls we want to display.
 NAV = {
-    'Home': '/',
-    'Search': '/search',
+    "Home": "/",
+    "Search": "/search",
 }
 
 SEARCH_FRAGMENT_LENGTH = 250
@@ -137,17 +154,17 @@ Topic = Query()
 # Let us look back at the expected features list on top
 # and define some "CRUD" functions we seem to need.
 
+
 def count_topics():
     return len(db)
 
 
 def create_topic(topic, content):
-    db.insert({'topic': topic.lower(), 'content': content})
+    db.insert({"topic": topic.lower(), "content": content})
 
 
 def fetch_topic(topic):
-    return {r['topic']: r['content']
-            for r in db.search(Topic.topic == topic.lower())}
+    return {r["topic"]: r["content"] for r in db.search(Topic.topic == topic.lower())}
 
 
 def search_topics(query):
@@ -157,7 +174,7 @@ def search_topics(query):
     # Implementing with SQLite will give a **HUGE** performance boost here.
     # However, for demonstration, TinyDB is cool.
     results = {}  # {topic: content-fragment}
-    query_words = set(query.lower().split()) - {'and', 'or', 'the', 'a', 'an'}
+    query_words = set(query.lower().split()) - {"and", "or", "the", "a", "an"}
 
     def keep(topic, content):
         if topic in results:
@@ -167,7 +184,7 @@ def search_topics(query):
         results.update({topic: content})
 
     for record in db.all():
-        topic, content = record['topic'], record['content']
+        topic, content = record["topic"], record["content"]
         for word in query_words:
             if word in topic:
                 keep(topic, content)
@@ -180,8 +197,9 @@ def save_topic(topic, content):
     # An under-appreciated  benefit of wrapping external API calls
     # within your functions -
     # you get to control the vocabulary that creeps into your code.
-    db.upsert({'topic': topic.lower(), 'content': content},
-              Topic.topic == topic.lower())
+    db.upsert(
+        {"topic": topic.lower(), "content": content}, Topic.topic == topic.lower()
+    )
 
 
 def delete_topic(topic):
@@ -204,15 +222,16 @@ def delete_topic(topic):
 # We will split up specific sections of the template into separate functions.
 # For our tiny wiki, a single page is sufficient.
 
+
 def render_base(topic, content, create, count, results=False):
     # First, define a variable named `doc` as an  instance of `Doc`.
     # (it is important, MakeWeb will fail if you call a tag
     # before defining a doc first).
-    doc = Doc('html')
+    doc = Doc("html")
     # With that in place, we can now generate our document structure.
     with head():
-        meta(charset='utf-8')  # Define charset first.
-        [meta(**{k:v}) for k, v in META.items()]  # Works with comprehensions.
+        meta(charset="utf-8")  # Define charset first.
+        [meta(**{k: v}) for k, v in META.items()]  # Works with comprehensions.
         title(topic)  # Title is required for valid html.
 
         ## Uncomment the following line to apply a basic style.
@@ -226,14 +245,14 @@ def render_base(topic, content, create, count, results=False):
         # link(href='/static/markdown.css', _type='text/css', rel='stylesheet')
 
         # Bare-minimum style tweaks.
-        link(href='/static/app.css', _type='text/css', rel='stylesheet')
-    with body(cls='markdown'):
+        link(href="/static/app.css", _type="text/css", rel="stylesheet")
+    with body(cls="markdown"):
         # Break apart pieces of template using familiarity of functions.
         # We pass `doc` to a template function that will modify
         # the `doc` we are refering to in render_base(), in place.
         render_nav(doc)
         # Higher-level structure stays within base template.
-        with div(id='content-wrap'):
+        with div(id="content-wrap"):
             # Pass in any variables along with doc
             # needed to render the template.
             render_content(doc, topic, content, create, results)
@@ -242,7 +261,7 @@ def render_base(topic, content, create, count, results=False):
         # Below, we build a separate `doc` within render_footer()
         # and plug in the generated html straight into a div.
         # Doing so allows greater control over the overall layout from base.
-        div(render_footer(count), id='footer')
+        div(render_footer(count), id="footer")
     # We return rendered html by calling `str(doc)`.
     # `doc` is no longer in scope and will be removed from memory automatically.
     return str(doc)
@@ -251,73 +270,78 @@ def render_base(topic, content, create, count, results=False):
 # Not *too* bad, eh?
 # Let us define the three render_... functions required by render_base().
 
+
 def render_nav(doc):
     with nav():
-        [li(a(k, href=v), cls='navli') for k, v in NAV.items()]
+        [li(a(k, href=v), cls="navli") for k, v in NAV.items()]
 
 
 def render_content(doc, topic, content, create, results):
     hr()
     if results:  # Don't link "Results for..."
-        h1(topic, id='topic')
+        h1(topic, id="topic")
     elif create:  # When editing, clicking on topic h1 cancels edit operation.
-        a(h1(topic, id='topic'), href='/{}'.format(topic), cls='topic-h1')
+        a(h1(topic, id="topic"), href="/{}".format(topic), cls="topic-h1")
     else:  # When viewing, clicking on topic h1 opens edit form.
-        a(h1(topic, id='topic'), href='/{}/edit'.format(topic), cls='topic-h1')
+        a(h1(topic, id="topic"), href="/{}/edit".format(topic), cls="topic-h1")
     if create:
-        div(render_content_form(topic, content), id='content-edit')
+        div(render_content_form(topic, content), id="content-edit")
     else:
-        div(render_markdown(str(content)), id='content-display')
+        div(render_markdown(str(content)), id="content-display")
 
 
 def render_footer(count):
     # Isolated fragments of doc are great for testing!
     doc = Doc()  # Note the missing doctype 'html', we skip it for fragments.
     hr()
-    p('{} topic{} in wiki.'.format(count, '' if count == 1 else 's'),
-      cls='footer-stats')
+    p(
+        "{} topic{} in wiki.".format(count, "" if count == 1 else "s"),
+        cls="footer-stats",
+    )
     return doc
 
 
 # Almost there, two more template fragment functions
 # needed by render_content(), let us define that too.
 
+
 def render_markdown(content):
-    content = re.sub(r'\[\[(\w+)\]\]', r'<a href="/\1">\1<a>', content)
+    content = re.sub(r"\[\[(\w+)\]\]", r'<a href="/\1">\1<a>', content)
     return markdown.markdown(content)
 
 
 def render_content_form(topic, content):
     doc = Doc()
-    with form(action='/save', method='post'):
-        _input(id='topic-box', name='topic', value=topic, hidden=True)
-        div(textarea(content, rows=10, cols=35, name='content',
-                     id='content-box'))
-        button('Save', id='content-save')
+    with form(action="/save", method="post"):
+        _input(id="topic-box", name="topic", value=topic, hidden=True)
+        div(textarea(content, rows=10, cols=35, name="content", id="content-box"))
+        button("Save", id="content-save")
     return doc
 
 
 # Good time to check if we missed something in the features list.
 # Oh, a fragment for search results!
 
+
 def render_search_results(query, results):
     doc = Doc()
     h3(render_search_form(query))
-    with ul(id='search-results'):
+    with ul(id="search-results"):
         for topic, content in results.items():
             with li():
-                h5(a(topic, href='/{}'.format(topic)))
+                h5(a(topic, href="/{}".format(topic)))
                 p(content)
     return doc
 
 
 # Aha, one more left, needed by render_search_results().
 
+
 def render_search_form(query):
     doc = Doc()
-    with form(action='/search', method='post'):
-        _input(id='query', name='query', value=query)
-        button('Search')
+    with form(action="/search", method="post"):
+        _input(id="query", name="query", value=query)
+        button("Search")
     return doc
 
 
@@ -343,52 +367,53 @@ def render_search_form(query):
 #   A single Quart app can handle many simultaneous connections,
 #   and it supports http2 and websockets out of the box!
 
-@app.route('/')
+
+@app.route("/")
 def home():
     topic = TOPIC
-    content = fetch_topic(topic).get(topic) or ''
+    content = fetch_topic(topic).get(topic) or ""
     create = False if content else True
     count = count_topics()
     return Response(render_base(topic, content, create, count))
 
 
-@app.route('/save', methods=['post'])
+@app.route("/save", methods=["post"])
 def save():
-    topic = request.form.get('topic')
-    content = request.form.get('content')
+    topic = request.form.get("topic")
+    content = request.form.get("content")
     save_topic(topic, content)
-    return redirect('/{}'.format(topic))
+    return redirect("/{}".format(topic))
 
 
-@app.route('/<topic>')
+@app.route("/<topic>")
 def topic_page(topic):
-    content = fetch_topic(topic).get(topic) or ''
+    content = fetch_topic(topic).get(topic) or ""
     create = False if content else True
     count = count_topics()
     return Response(render_base(topic, content, create, count))
 
 
-@app.route('/<topic>/edit')
+@app.route("/<topic>/edit")
 def topic_edit(topic):
-    content = fetch_topic(topic).get(topic) or ''
+    content = fetch_topic(topic).get(topic) or ""
     create = True
     count = count_topics()
     return Response(render_base(topic, content, create, count))
 
 
-@app.route('/search')
+@app.route("/search")
 def search_form():
-    topic = 'Search'
-    content = render_search_form('')
+    topic = "Search"
+    content = render_search_form("")
     create = False
     count = count_topics()
     return Response(render_base(topic, content, create, count, results=True))
 
 
-@app.route('/search', methods=['post'])
+@app.route("/search", methods=["post"])
 def search_post():
-    query = request.form.get('query') or ''
-    topic = 'Results for {}'.format(query)
+    query = request.form.get("query") or ""
+    topic = "Results for {}".format(query)
     results = search_topics(query)
     content = render_search_results(query, results)
     create = False
@@ -396,9 +421,9 @@ def search_post():
     return Response(render_base(topic, content, create, count, results=True))
 
 
-@app.route('/search/<query>')
+@app.route("/search/<query>")
 def search_manual(query):
-    topic = 'Results for {}'.format(query)
+    topic = "Results for {}".format(query)
     results = search_topics(query)
     content = render_search_results(query, results)
     create = False
@@ -409,7 +434,7 @@ def search_manual(query):
 # Configure Flask's static route handler for css.
 
 app.static_folder = STATIC_DIR
-app.static_url_path = '/static'
+app.static_url_path = "/static"
 
 ##### run()
 

@@ -11,11 +11,11 @@ from makeweb import Doc, body, h1
 app = Flask(__name__)
 
 
-@app.route('/')
+@app.route("/")
 def index():
-    doc = Doc('html')
+    doc = Doc("html")
     with body():
-        h1('Hello, World Wide Web!')
+        h1("Hello, World Wide Web!")
     return Response(str(doc))
 
 

@@ -1,9 +1,9 @@
 # MakeWeb
 
-Make interactive web apps using good ol' HTML, CSS 
+Make interactive web apps using good ol' HTML, CSS
 and a sprinkling of JavaScript — in Python.
 
-## Examples:
+## Examples
 
 ### HyperText Markup Lnguage
 
@@ -33,6 +33,7 @@ We should see this output on the screen:
 </body>
 </html>
 ```
+
 *(Whitespace added for clarity.)*
 
 Ha! HTML was easy, let us generate CSS from Python code.
@@ -52,7 +53,7 @@ css('h1', color='darkorange', margin__top='1em')
 print(str(css))
 ```
 
-Running the above example we see... 
+Running the above example we see...
 
 ```css
 body{
@@ -64,13 +65,14 @@ h1{
   margin-top:1em
 }
 ```
+
 *(Whitespace added for clarity.)*
 
 Notice that the double underscore in `css('h1', margin__top='1em')`
-gets converted to hyphen in CSS as `h1{margin-top:1em}`. 
+gets converted to hyphen in CSS as `h1{margin-top:1em}`.
 This pattern is used throughout the library for HTML and CSS attributes.
 
-So... CSS is even easier?! 
+So... CSS is even easier?!
 How about something more ambitious?
 
 ### JavaScript
@@ -99,8 +101,8 @@ function say_hello(){
   hello_box.innerHTML="Hello, World Wide Web!";
 }
 ```
-*(Whitespace added for clarity.)*
 
+*(Whitespace added for clarity.)*
 
 Now let us use these capabilities together!
 
@@ -153,65 +155,93 @@ def index():
 app.run()  # <-- It is time! 
 ```
 
-This app transfers ~550 bytes over the network in order to run successfully, 
-that is including the HTTP headers overhead. 
+This app transfers ~550 bytes over the network in order to run successfully,
+that is including the HTTP headers overhead.
 You read that right, not even one kilobyte!
 The web technologies are quite simple and straightforward for general use,
 and very flexible, robust and powerful too!
 
-You might not need (or want the baggage of) complex tooling 
-for a small project. 
-It could be a one time make-and-forget tool at work 
-or a weekend hobby project, 
+You might not need (or want the baggage of) complex tooling
+for a small project.
+It could be a one time make-and-forget tool at work
+or a weekend hobby project,
 or maybe something even larger if you really like this way of working.
-MakeWeb can come in handy because it makes it almost trivial 
+MakeWeb can come in handy because it makes it almost trivial
 to build the web like it was intended,
 straight from your Python code.
 
-Wait, somebody mentioned single-page-apps? 
-How about single source-file apps 
+Wait, somebody mentioned single-page-apps?
+How about single source-file apps
 that don't download half the internet to work? 😂
 Kidding, this is a very, very barebones system,
-and therefore you can use any existing stylesheets 
+and therefore you can use any existing stylesheets
 or JS libraries alongside MakeWeb.
 
-> Check out examples for more demos! 
+> Check out examples for more demos!
 
+## Install
 
-## Install:
+### Using Poetry (Recommended)
 
-### Stable:
+```shell
+# Clone the repository
+git clone https://github.com/hiway/makeweb.git
+cd makeweb
 
+# Install poetry if you haven't already
+pip install poetry
 
-    $ python3 -m venv makeweb
-    $ source makeweb/bin/activate
-    $ pip install makeweb[js]
+# Install makeweb with JS support
+poetry install --with js
 
+# For development
+poetry install --with dev
 
-### Current:
+# For running examples
+poetry install --with examples
 
-    $ python3 -m venv makeweb
-    $ source makeweb/bin/activate
-    $ git clone https://github.com/hiway/makeweb.git
-    $ cd makeweb
-    $ pip install -e .[examples]
+# For everything
+poetry install --with dev,js,examples
+```
 
+### Using pip (Legacy)
 
-### Development:
+#### Stable
 
-    $ python3 -m venv makeweb
-    $ source makeweb/bin/activate
-    $ git clone https://github.com/hiway/makeweb.git
-    $ cd makeweb
-    $ pip install -e .[dev]
+```shell
+python3 -m venv makeweb
+source makeweb/bin/activate
+pip install makeweb[js]
+```
 
-#### Test:
+#### Current
 
-```bash
-$ pytest tests.py
+```shell
+python3 -m venv makeweb
+source makeweb/bin/activate
+git clone https://github.com/hiway/makeweb.git
+cd makeweb
+pip install -e .[examples]
+```
+
+#### Development
+
+```shell
+python3 -m venv makeweb
+source makeweb/bin/activate
+git clone https://github.com/hiway/makeweb.git
+cd makeweb
+pip install -e .[dev]
+```
+
+#### Test
+
+```console
+pytest tests.py
 ```
 
 With coverage:
-```bash
-$ pytest --cov=makeweb --cov-report=term tests.py
+
+```console
+pytest --cov=makeweb --cov-report=term tests.py
 ```

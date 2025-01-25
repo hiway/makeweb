@@ -52,9 +52,18 @@ from flask import Flask, Response
 
 # Import Doc, CSS, JS along with the tags.
 from makeweb import (
-    Doc, CSS, JS,
-    head, title, style, script,
-    body, div, a, span, i,
+    Doc,
+    CSS,
+    JS,
+    head,
+    title,
+    style,
+    script,
+    body,
+    div,
+    a,
+    span,
+    i,
 )
 
 # Initialize app, css and js.
@@ -71,40 +80,41 @@ js = JS()
 # Internals: MakeWeb's css support works with python's __call__() feature.
 
 
-css('body',
-    background__color='#102719',
-    color='#93ff45',
-    font__family='roboto-mono,monospace',
-    text__align='center',
-    background='repeating-linear-gradient(0deg,#102719,\
+css(
+    "body",
+    background__color="#102719",
+    color="#93ff45",
+    font__family="roboto-mono,monospace",
+    text__align="center",
+    background="repeating-linear-gradient(0deg,#102719,\
     #100019 3px,\
     #0f1009 3px,\
     #0a2019 3px,\
     #0f1f09 3px,\
-    #102719 10px);',
-    background__size='100% 50px',
-    )
+    #102719 10px);",
+    background__size="100% 50px",
+)
 
-css('.timer',
+css(
+    ".timer",
     width="100%",
-    font__size='3.4em',
-    margin__top='3em',
-    __webkit__filter='blur(0.6px)',
-    filter='blur(0.6px)')
+    font__size="3.4em",
+    margin__top="3em",
+    __webkit__filter="blur(0.6px)",
+    filter="blur(0.6px)",
+)
 
-css('.timer span i',
-    color='#93aa22')
+css(".timer span i", color="#93aa22")
 
-css('.legend-wrap',
+css(
+    ".legend-wrap",
     width="100%",
-    margin__top='1em',
-    __webkit__filter='blur(0.2px)',
-    filter='blur(0.2px)')
+    margin__top="1em",
+    __webkit__filter="blur(0.2px)",
+    filter="blur(0.2px)",
+)
 
-css('a',
-    color='#93cc45',
-    font__size='1.3em',
-    text__decoration='none')
+css("a", color="#93cc45", font__size="1.3em", text__decoration="none")
 
 
 # We are going to cheat a little and use an existing library
@@ -115,31 +125,36 @@ css('a',
 # Check out TimezZ library that powers the timer:
 #   - https://github.com/BrooonS/TimezZ
 
+
 @js.function
 def start_timer():
-    TimezZ('.j-timer', {
-        'date': 'January 19, 2038 03:14:07',
-        'daysName': 'days',
-        'hoursName': 'h',
-        'minutesName': 'm',
-        'secondsName': 's',
-        'isStop': False,
-        'template': '<span>NUMBER<i>LETTER</i></span> ',
-    })
+    TimezZ(
+        ".j-timer",
+        {
+            "date": "January 19, 2038 03:14:07",
+            "daysName": "days",
+            "hoursName": "h",
+            "minutesName": "m",
+            "secondsName": "s",
+            "isStop": False,
+            "template": "<span>NUMBER<i>LETTER</i></span> ",
+        },
+    )
 
 
 # Render the initial timer widget as TimezZ does once it is initialized.
 
+
 def render_initial_timer(days, hours, minutes, seconds):
     doc = Doc()
     with span(days):
-        i('days ')
+        i("days ")
     with span(hours):
-        i('h ')
+        i("h ")
     with span(minutes):
-        i('m ')
+        i("m ")
     with span(seconds):
-        i('s ')
+        i("s ")
     return str(doc)
 
 
@@ -148,25 +163,32 @@ def render_initial_timer(days, hours, minutes, seconds):
 # and include the external js library.
 # While embedding css or js, we use the style() or script() context block.
 
-@app.route('/')
+
+@app.route("/")
 def index():
-    doc = Doc('html')
+    doc = Doc("html")
     with head():
-        title('Year 2038 problem')
+        title("Year 2038 problem")
         with style():
             css.embed()
-    with body(onload='start_timer()'):
+    with body(onload="start_timer()"):
         # Exercise: calculate these numbers in advance, in Python,
         # and fill them in, letting the page be useful
         # even if a user has disabled JS
         # (with adtech giving us many good reasons to do so!).
         # As a rule, even in 2018, do not assume JS is available by default.
-        div(render_initial_timer(days='0000', hours='00', minutes='00', seconds='00'),
-            cls='timer j-timer')
-        div(a('to January 19, 2038 03:14:07',
-              href='https://en.wikipedia.org/wiki/Year_2038_problem'),
-            cls='legend-wrap')
-        script(src='/static/timezz.js')
+        div(
+            render_initial_timer(days="0000", hours="00", minutes="00", seconds="00"),
+            cls="timer j-timer",
+        )
+        div(
+            a(
+                "to January 19, 2038 03:14:07",
+                href="https://en.wikipedia.org/wiki/Year_2038_problem",
+            ),
+            cls="legend-wrap",
+        )
+        script(src="/static/timezz.js")
         with script():  # You can comment out this block
             js.embed()  # to test render_initial_timer()
     return Response(str(doc))
