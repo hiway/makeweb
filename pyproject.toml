@@ -3,12 +3,48 @@ name = "makeweb"
 version = "0.1.0"
 description = "Make interactive web apps using good ol' HTML, CSS and a sprinkling of JavaScript — in Python."
 authors = ["Harshad Sharma <harshad@sharma.io>"]
-license = "MIT License"
+license = "MIT"
 readme = "README.md"
+keywords = ["website", "html", "css", "javascript", "generate", "template"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: Unix",
+    "Operating System :: POSIX",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: Implementation :: CPython",
+    "Topic :: Internet",
+    "Topic :: Software Development",
+    "Topic :: Utilities",
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
 
+[tool.poetry.group.dev.dependencies]
+pytidylib = "*"
+jsmin = "*"
+javascripthon = "*"
+flask = "*"
+pytest = "*"
+pytest-cov = "*"
+
+[tool.poetry.group.js.dependencies]
+jsmin = "*"
+javascripthon = "*"
+
+[tool.poetry.group.examples.dependencies]
+faker = "*"
+markdown = "*"
+flask = "*"
+tinydb = "*"
+jsmin = "*"
+javascripthon = "*"
+quart = "^0.20.0"
+websockets = "^14.2"
 
 [build-system]
 requires = ["poetry-core"]
