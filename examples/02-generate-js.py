@@ -1,4 +1,4 @@
-from makeweb import JS
+from makeweb.javascript import JS, document
 
 js = JS()
 

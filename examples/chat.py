@@ -9,6 +9,7 @@ import websockets
 from quart import Quart, Response
 
 from makeweb import Doc, CSS, JS
+from makeweb.javascript import document, WebSocket, ws
 from makeweb.html import (
     head,
     title,

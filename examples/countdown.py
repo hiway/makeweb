@@ -67,6 +67,7 @@ from makeweb.html import (
     span,
     i,
 )
+from makeweb.javascript import TimezZ
 
 # Initialize app, css and js.
 app = Flask(__name__)

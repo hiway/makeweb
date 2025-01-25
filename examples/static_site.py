@@ -28,7 +28,6 @@ from makeweb.html import (
     head,
     link,
     title,
-    nav,
     body,
     div,
     h1,

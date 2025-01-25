@@ -13,6 +13,7 @@ from makeweb.html import (
     h1,
     button,
 )
+from makeweb.javascript import document
 
 app = Flask(__name__)
 css = CSS()

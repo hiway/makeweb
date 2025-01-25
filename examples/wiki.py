@@ -80,12 +80,10 @@ from makeweb.html import (
     h1,
     h3,
     h5,
-    span,
     p,
     # Tags for forms. Since `input` is a Python built-in name,
     # we can avoid clashes by importing with an underscore before its name.
     form,
-    label,
     _input,
     textarea,
     button,

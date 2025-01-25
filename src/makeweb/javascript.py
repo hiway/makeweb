@@ -1,4 +1,5 @@
 import inspect as _inspect
+import sys as _sys
 
 from .html import Doc
 from .utilities import get_local_variable_from_caller
@@ -43,3 +44,16 @@ class JS(object):
     def embed(self):
         doc = get_local_variable_from_caller("doc", Doc)
         doc.elements.append(self)
+
+
+class JavaScript:
+    def __getattr__(self, name):
+        if name.startswith("__"):
+            return self.__getattribute__(name)
+        if name in globals():
+            return globals()[name]
+        # Import dummy javascript objects
+        return object
+
+
+_sys.modules[__name__] = JavaScript()
