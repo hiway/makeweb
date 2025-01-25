@@ -1,10 +1,17 @@
 __version__ = "0.1.0"
 
 import sys as _sys
+import warnings as _warnings
 from functools import partial as _partial, reduce
 import inspect as _inspect
 import os as _os
-import warnings as _warnings
+
+# Suppress specific AST deprecation warnings from javascripthon
+_warnings.filterwarnings(
+    "ignore", category=DeprecationWarning, module="metapensiero.pj"
+)
+_warnings.filterwarnings("ignore", message="ast.Str is deprecated")
+_warnings.filterwarnings("ignore", message="Attribute s is deprecated")
 
 
 class defaults:

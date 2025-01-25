@@ -234,6 +234,8 @@ cd makeweb
 pip install -e .[dev]
 ```
 
+- libtidy-dev
+
 #### Test
 
 ```console

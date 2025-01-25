@@ -22,19 +22,21 @@ classifiers = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+# Support Python versions until 3.14 where ast.Str is removed
+# which is currently used in metapensiero/pj/transformations...
+python = ">=3.9,<3.14"
 
 [tool.poetry.group.dev.dependencies]
 pytidylib = "*"
 jsmin = "*"
-javascripthon = "*"
+javascripthon = "^0.13"
 flask = "*"
 pytest = "*"
 pytest-cov = "*"
 
 [tool.poetry.group.js.dependencies]
 jsmin = "*"
-javascripthon = "*"
+javascripthon = "^0.13"
 
 [tool.poetry.group.examples.dependencies]
 faker = "*"
@@ -42,10 +44,19 @@ markdown = "*"
 flask = "*"
 tinydb = "*"
 jsmin = "*"
-javascripthon = "*"
+javascripthon = "^0.13"
 quart = "^0.20.0"
 websockets = "^14.2"
+
 
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning:",
+    # note the use of single quote below to denote "raw" strings in TOML
+    'ignore:function ham\(\) is deprecated:DeprecationWarning',
+]
