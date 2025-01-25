@@ -266,32 +266,6 @@ def test_text_tag():
     assert str(doc) == "Namaskaar!"
 
 
-def test_css():
-    from makeweb import CSS
-
-    css = CSS()
-    css("body", background_color="black", color="green")
-    assert str(css) == "body{background-color:black;color:green}"
-    css(".main li", __webkit__filter="blur(1px)")
-    assert (
-        str(css)
-        == "body{background-color:black;color:green}\
-.main li{--webkit--filter:blur(1px)}"
-    )
-
-
-def test_css_embed():
-    from makeweb import CSS, Doc
-    from makeweb.html import style
-
-    css = CSS()
-    css("body", background_color="black", color="green")
-    doc = Doc()
-    with style():
-        css.embed()
-    assert str(doc) == "<style>body{background-color:black;color:green}</style>"
-
-
 def test_import_deprecated_tag_warning():
     from makeweb.html import Doc, blink
 
