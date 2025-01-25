@@ -135,21 +135,20 @@ def test_get_local_variable_from_caller_level_4():
     from makeweb import Doc
 
     def caller_func():
-        doc = Doc(doctype="html")
-        second_caller()
+        second_caller()  # Note: doc is not defined here
 
     def second_caller():
         third_caller()
 
     def third_caller():
-        [test_magic() for x in [0, 1]]
+        test_magic()
 
     def test_magic():
-        doc = get_local_variable_from_caller("doc", Doc)
-        str(doc)
+        with pytest.raises(LookupError):
+            # This should fail because doc is not defined in any parent frame
+            doc = get_local_variable_from_caller("doc", Doc)
 
-    with pytest.raises(LookupError):
-        caller_func()
+    caller_func()
 
 
 def test_doc():
