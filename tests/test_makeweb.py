@@ -74,6 +74,18 @@ def test_fix_attribute():
     with pytest.raises(TypeError):
         fix_attribute(808)
 
+    # Test single underscore replacement
+    defaults.replace_single_underscore = True
+    assert fix_attribute("data_type") == "data-type"
+    assert fix_attribute("aria_label") == "aria-label"
+
+    defaults.replace_single_underscore = False
+    assert fix_attribute("data_type") == "data_type"
+    assert fix_attribute("aria_label") == "aria_label"
+
+    # Reset to default
+    defaults.replace_single_underscore = True
+
 
 def test_get_local_variable_from_caller_level_1():
     from makeweb.html import Doc
