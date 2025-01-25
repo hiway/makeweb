@@ -20,6 +20,7 @@ classifiers = [
     "Topic :: Software Development",
     "Topic :: Utilities",
 ]
+packages = [{ include = "makeweb", from = "src" }]
 
 [tool.poetry.dependencies]
 # Support Python versions until 3.14 where ast.Str is removed
