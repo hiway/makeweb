@@ -28,23 +28,23 @@ packages = [{ include = "makeweb", from = "src" }]
 python = ">=3.9,<3.14"
 
 [tool.poetry.group.dev.dependencies]
-pytidylib = "*"
-jsmin = "*"
+jsmin = "^3.0.1"
 javascripthon = "^0.13"
-flask = "*"
-pytest = "*"
-pytest-cov = "*"
+flask = "^3.1.0"
+pytest = "^8.3.4"
+pytest-cov = "^6.0.0"
+pytidylib = "^0.3.2"
 
 [tool.poetry.group.js.dependencies]
-jsmin = "*"
+jsmin = "^3.0.1"
 javascripthon = "^0.13"
 
 [tool.poetry.group.examples.dependencies]
-faker = "*"
-markdown = "*"
-flask = "*"
-tinydb = "*"
-jsmin = "*"
+faker = "^35.0.0"
+markdown = "^3.7"
+flask = "^3.1.0"
+tinydb = "^4.8.2"
+jsmin = "^3.0.1"
 javascripthon = "^0.13"
 quart = "^0.20.0"
 websockets = "^14.2"
