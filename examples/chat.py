@@ -1,12 +1,7 @@
 #!/usr/bin/env python
-#
-# chat.py
-#
-#
-import asyncio
 
-import websockets
-from quart import Quart, Response
+import asyncio
+from quart import Quart, Response, websocket
 
 from makeweb import Doc, CSS, JS
 from makeweb.javascript import document, WebSocket, ws
@@ -31,7 +26,7 @@ META = {
 app = Quart(__name__)
 css = CSS()
 js = JS()
-clients = set()  # Websocket chat clients.
+clients = set()  # Chat clients
 
 css(
     "*,body",
@@ -115,7 +110,7 @@ def on_message(event):
 
 @js.script
 def connect_websocket():
-    ws = WebSocket("ws://127.0.0.1:5001/")
+    ws = WebSocket("ws://127.0.0.1:5000/ws")
     ws.onmessage = on_message
     document.getElementById("bottom").scrollIntoView()
 
@@ -146,49 +141,49 @@ async def process_command(command):
     return "COMMAND: {}".format(command)
 
 
-async def chat_server(websocket):  # Removed 'path' parameter
-    clients.add(websocket)
-
-    async def send_message(clients, client, message):
+async def broadcast(message):
+    """Broadcast message to all connected clients."""
+    for queue in clients:
         try:
-            await client.send(message)  # Simplified send
+            await queue.put(message)
         except Exception as e:
-            print(f"Error sending message: {e}")
-            if client in clients:  # Check if client exists before removing
-                clients.remove(client)
+            print(f"Error broadcasting message: {e}")
+            if queue in clients:
+                clients.remove(queue)
+
+
+@app.websocket("/ws")
+async def chat_websocket():
+    """WebSocket endpoint for chat."""
+    queue = asyncio.Queue()
+    clients.add(queue)
 
     try:
-        async for message in websocket:
-            print(message)
-            if message.startswith("/"):
-                reply = await process_command(message[1:])
-                await websocket.send(reply)
-                continue
-            # Use gather for concurrent sends
-            await asyncio.gather(
-                *(send_message(clients, client, message) for client in clients)
-            )
-    except websockets.exceptions.ConnectionClosed:
-        print("Client disconnected")
+        # Create producer task
+        async def producer():
+            while True:
+                message = await queue.get()
+                await websocket.send(message)
+
+        # Create consumer task
+        async def consumer():
+            while True:
+                message = await websocket.receive()
+                if message.startswith("/"):
+                    reply = await process_command(message[1:])
+                    await queue.put(reply)
+                else:
+                    await broadcast(message)
+
+        # Run both producer and consumer
+        producer_task = asyncio.create_task(producer())
+        consumer_task = asyncio.create_task(consumer())
+
+        await asyncio.gather(producer_task, consumer_task)
+
     finally:
-        if websocket in clients:  # Check if client exists before removing
-            clients.remove(websocket)
+        clients.remove(queue)
 
 
-ws_server = None
-
-
-@app.before_serving
-async def startup():
-    global ws_server
-    ws_server = await websockets.serve(chat_server, "0.0.0.0", 5001)
-
-
-@app.after_serving
-async def shutdown():
-    global ws_server
-    ws_server.close()
-    await ws_server.wait_closed()
-
-
-app.run()
+if __name__ == "__main__":
+    app.run()

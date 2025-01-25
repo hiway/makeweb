@@ -43,11 +43,9 @@ javascripthon = "^0.13"
 faker = "^35.0.0"
 markdown = "^3.7"
 flask = "^3.1.0"
-tinydb = "^4.8.2"
 jsmin = "^3.0.1"
 javascripthon = "^0.13"
 quart = "^0.20.0"
-websockets = "^14.2"
 
 
 [build-system]
