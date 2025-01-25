@@ -85,25 +85,25 @@ js = JS()
 
 css(
     "body",
-    background__color="#102719",
+    background_color="#102719",
     color="#93ff45",
-    font__family="roboto-mono,monospace",
-    text__align="center",
+    font_family="roboto-mono,monospace",
+    text_align="center",
     background="repeating-linear-gradient(0deg,#102719,\
     #100019 3px,\
     #0f1009 3px,\
     #0a2019 3px,\
     #0f1f09 3px,\
     #102719 10px);",
-    background__size="100% 50px",
+    background_size="100% 50px",
 )
 
 css(
     ".timer",
     width="100%",
-    font__size="3.4em",
-    margin__top="3em",
-    __webkit__filter="blur(0.6px)",
+    font_size="3.4em",
+    margin_top="3em",
+    _webkit_filter="blur(0.6px)",
     filter="blur(0.6px)",
 )
 
@@ -112,12 +112,12 @@ css(".timer span i", color="#93aa22")
 css(
     ".legend-wrap",
     width="100%",
-    margin__top="1em",
-    __webkit__filter="blur(0.2px)",
+    margin_top="1em",
+    _webkit_filter="blur(0.2px)",
     filter="blur(0.2px)",
 )
 
-css("a", color="#93cc45", font__size="1.3em", text__decoration="none")
+css("a", color="#93cc45", font_size="1.3em", text_decoration="none")
 
 
 # We are going to cheat a little and use an existing library

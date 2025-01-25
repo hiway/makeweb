@@ -37,57 +37,57 @@ css(
     "*,body",
     margin="0",
     padding="0",
-    font__family="roboto,verdana,sans-serif",
-    font__size="12pt",
+    font_family="roboto,verdana,sans-serif",
+    font_size="12pt",
 )
 css("html, body", height="100%")
 css(
     "input",
-    box__sizing="border-box",
-    __moz__box__sizing="border-box",
-    __webkit__box__sizing="border-box",
+    box_sizing="border-box",
+    _moz_box_sizing="border-box",
+    _webkit_box_sizing="border-box",
 )
 css(
     ".page",
     display="grid",
-    grid__template__columns="auto 3em",
-    grid__auto__rows="minmax(10px, auto)",
-    grid__gap="6px",
+    grid_template_columns="auto 3em",
+    grid_auto_rows="minmax(10px, auto)",
+    grid_gap="6px",
     position="relative",
     top="0",
     left="0",
     margin="0.5em",
-    margin__bottom="1em",
+    margin_bottom="1em",
 )
 css(
     "#chat_log",
-    grid__column="1 / 3",
-    grid__row="1",
+    grid_column="1 / 3",
+    grid_row="1",
     width="100%",
-    max__height="100%",
-    max__width="100%",
+    max_height="100%",
+    max_width="100%",
     overflow="auto",
 )
 css(
     "#chat_log li",
-    list__style="none",
-    font__size="12pt",
-    margin__left="1em",
-    margin__right="1em",
+    list_style="none",
+    font_size="12pt",
+    margin_left="1em",
+    margin_right="1em",
 )
 css(
     "#txt_message",
-    grid__row="2",
-    grid__column="1",
+    grid_row="2",
+    grid_column="1",
     width="100%",
-    padding__left="0.8em",
-    padding__right="0.2em",
+    padding_left="0.8em",
+    padding_right="0.2em",
 )
 css(
     "#btn_send",
-    grid__row="2",
-    grid__column="2",
-    font__size="1.2em",
+    grid_row="2",
+    grid_column="2",
+    font_size="1.2em",
 )
 
 

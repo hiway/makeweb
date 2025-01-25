@@ -19,7 +19,7 @@ app = Flask(__name__)
 css = CSS()
 js = JS()
 
-css("*,body", font__family="sans-serif", text__align="center")  # <- add CSS to taste.
+css("*,body", font_family="sans-serif", text_align="center")  # <- add CSS to taste.
 css("h1", color="darkblue")
 
 
