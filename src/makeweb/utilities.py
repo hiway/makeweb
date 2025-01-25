@@ -7,6 +7,8 @@ from .defaults import defaults
 def fix_attribute(attrib: str):
     if not isinstance(attrib, str):
         raise TypeError("Expected attrib to be str, got: {!r}".format(attrib))
+    if defaults.preserve_vendor_prefixes and attrib.startswith("_webkit_"):
+        return "-webkit-" + attrib[8:]
     if attrib == "cls" and defaults.replace_cls:
         return "class"
     elif attrib == "className" and defaults.replace_className:

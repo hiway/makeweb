@@ -4,6 +4,7 @@ class defaults:
     replace_double_underscore = False
     replace_className = True
     replace_cls = True
+    preserve_vendor_prefixes = True  # Add this line
     # https://html.spec.whatwg.org/multipage/syntax.html#the-doctype
     doctypes = {"html"}
     # https://developer.mozilla.org/en-US/docs/Web/HTML/Element
