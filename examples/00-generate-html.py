@@ -1,4 +1,5 @@
-from makeweb.html import Doc, body, h1
+from makeweb import Doc
+from makeweb.html import *
 
 
 def generate_html():
