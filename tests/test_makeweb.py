@@ -356,3 +356,17 @@ def test_text_escaping():
 
 def test_html_is_valid():
     pass
+
+
+def test_javascript_dummy_objects():
+    from makeweb.javascript import document, WebSocket, window, console
+
+    # Test that dummy JavaScript objects are created on demand
+    assert document is not None
+    assert isinstance(document, object)
+    assert WebSocket is not None
+    assert isinstance(WebSocket, object)
+    assert window is not None
+    assert isinstance(window, object)
+    assert console is not None
+    assert isinstance(console, object)
