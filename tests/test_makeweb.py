@@ -337,8 +337,12 @@ def test_js_script_embed():
 
 
 def test_import_deprecated_tag_warning():
-    with pytest.raises(ImportError):
-        from makeweb.html import blink
+    from makeweb.html import Doc, blink
+
+    doc = Doc()
+
+    with pytest.warns(UserWarning):
+        blink("this")
 
 
 def test_import_unknown_tag_warning():

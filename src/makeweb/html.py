@@ -34,6 +34,8 @@ class Doc(object):
 class Tag(object):
     def __init__(self, _name, *elements, close=True, **attrs):
         self.name = _name or ""
+        if _name in defaults.deprecated_tags:
+            _warnings.warn(f"The {_name} tag is deprecated.")
         self.attrs = {fix_attribute(k): v for k, v in attrs.items()}
         self.elements = [e for e in elements if self.validate(_name, e)]
         self.close = close
@@ -229,7 +231,38 @@ param = _partial(VoidTag, "param")
 source = _partial(VoidTag, "source")
 track = _partial(VoidTag, "track")
 wbr = _partial(VoidTag, "wbr")
-
+# Deprecated Tags
+acronym = _partial(Tag, "acronym")
+applet = _partial(Tag, "applet")
+basefont = _partial(Tag, "basefont")
+bgsound = _partial(Tag, "bgsound")
+big = _partial(Tag, "big")
+blink = _partial(Tag, "blink")
+center = _partial(Tag, "center")
+command = _partial(Tag, "command")
+content = _partial(Tag, "content")
+dir = _partial(Tag, "dir")
+element = _partial(Tag, "element")
+font = _partial(Tag, "font")
+frame = _partial(Tag, "frame")
+frameset = _partial(Tag, "frameset")
+image = _partial(Tag, "image")
+isindex = _partial(Tag, "isindex")
+keygen = _partial(Tag, "keygen")
+listing = _partial(Tag, "listing")
+marquee = _partial(Tag, "marquee")
+menuitem = _partial(Tag, "menuitem")
+multicol = _partial(Tag, "multicol")
+nextid = _partial(Tag, "nextid")
+nobr = _partial(Tag, "nobr")
+noembed = _partial(Tag, "noembed")
+noframes = _partial(Tag, "noframes")
+plaintext = _partial(Tag, "plaintext")
+shadow = _partial(Tag, "shadow")
+spacer = _partial(Tag, "spacer")
+strike = _partial(Tag, "strike")
+tt = _partial(Tag, "tt")
+xmp = _partial(Tag, "xmp")
 
 __all__ = [
     # Tags
@@ -360,4 +393,36 @@ __all__ = [
     "source",
     "track",
     "wbr",
+    # Deprecated Tags
+    "acronym",
+    "applet",
+    "basefont",
+    "bgsound",
+    "big",
+    "blink",
+    "center",
+    "command",
+    "content",
+    "dir",
+    "element",
+    "font",
+    "frame",
+    "frameset",
+    "image",
+    "isindex",
+    "keygen",
+    "listing",
+    "marquee",
+    "menuitem",
+    "multicol",
+    "nextid",
+    "nobr",
+    "noembed",
+    "noframes",
+    "plaintext",
+    "shadow",
+    "spacer",
+    "strike",
+    "tt",
+    "xmp",
 ]
