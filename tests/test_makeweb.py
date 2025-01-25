@@ -304,6 +304,37 @@ def test_js_function():
     assert str(js) == 'function test(){alert("wut?");}'
 
 
+def test_js_with_params():
+    from makeweb import JS
+
+    js = JS()
+
+    @js.function
+    def greet(name, age):
+        console.log("Hello " + name + ", you are " + str(age) + " years old!")
+
+    assert (
+        str(js)
+        == 'function greet(name,age){console.log((((("Hello "+name)+", you are ")+age.toString())+" years old!"));}'
+    )
+
+
+def test_js_multiple_functions():
+    from makeweb import JS
+
+    js = JS()
+
+    @js.function
+    def func1():
+        return 42
+
+    @js.function
+    def func2():
+        return "hello"
+
+    assert str(js) == 'function func1(){return 42;}function func2(){return"hello";}'
+
+
 def test_js_script():
     from makeweb import JS
 
