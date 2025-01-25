@@ -6,7 +6,7 @@
 # !!! See hello-again.py for the commented version.
 #
 from flask import Flask, Response
-from makeweb import Doc, body, h1
+from makeweb.html import Doc, body, h1
 
 app = Flask(__name__)
 

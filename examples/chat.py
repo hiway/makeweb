@@ -4,28 +4,23 @@
 #
 #
 import asyncio
-from quart import Quart, Response
+
 import websockets
-from makeweb import (
-    Doc,
-    CSS,
-    JS,
+from quart import Quart, Response
+
+from makeweb import Doc, CSS, JS
+from makeweb.html import (
     head,
     title,
     style,
     script,
-    a,
     body,
-    h1,
     button,
     _input,
     ul,
     li,
     div,
-    span,
-    form,
     meta,
-    link,
 )
 
 META = {

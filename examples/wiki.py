@@ -60,7 +60,7 @@ from tinydb import TinyDB, Query
 
 # Makeweb, it a me!
 #  Run `pip install makeweb` to install MakeWeb.
-from makeweb import (
+from makeweb.html import (
     # First, the HTML Document class...
     Doc,
     # Then tags needed to build the `head` section.

@@ -76,7 +76,7 @@ def test_fix_attribute():
 
 
 def test_get_local_variable_from_caller_level_1():
-    from makeweb import Doc
+    from makeweb.html import Doc
 
     def caller_func():
         doc = Doc(doctype="html")
@@ -94,7 +94,7 @@ def test_get_local_variable_from_caller_level_1():
 
 
 def test_get_local_variable_from_caller_level_2():
-    from makeweb import Doc
+    from makeweb.html import Doc
 
     def caller_func():
         doc = Doc(doctype="html")
@@ -115,7 +115,7 @@ def test_get_local_variable_from_caller_level_2():
 
 
 def test_get_local_variable_from_caller_level_3():
-    from makeweb import Doc
+    from makeweb.html import Doc
 
     def caller_func():
         doc = Doc(doctype="html")
@@ -132,7 +132,7 @@ def test_get_local_variable_from_caller_level_3():
 
 
 def test_get_local_variable_from_caller_level_4():
-    from makeweb import Doc
+    from makeweb.html import Doc
 
     def caller_func():
         second_caller()  # Note: doc is not defined here
@@ -158,7 +158,7 @@ def test_doc():
     # doctype must be included in generated html,
     # however, we allow Doc to generate fragments as well.
     # Therefore, doctype must be supplied at Doc init for a "full" document.
-    from makeweb import Doc
+    from makeweb.html import Doc
 
     doc = Doc()
     assert str(doc) == ""
@@ -178,7 +178,7 @@ def test_doc():
 
 
 def test_tag_side_by_side():
-    from makeweb import Doc, h1, div
+    from makeweb.html import Doc, h1, div
 
     doc = Doc()
     h1("Hello, Test")
@@ -187,7 +187,7 @@ def test_tag_side_by_side():
 
 
 def test_tag_nested():
-    from makeweb import Doc, h1, div
+    from makeweb.html import Doc, h1, div
 
     doc = Doc()
     div(h1("Hello, Test"), id="atest")
@@ -195,7 +195,7 @@ def test_tag_nested():
 
 
 def test_tag_validation():
-    from makeweb import Doc, h1, div
+    from makeweb.html import Doc, h1, div
 
     doc = Doc()
     with pytest.raises(TypeError):
@@ -204,7 +204,7 @@ def test_tag_validation():
 
 
 def test_tag_context():
-    from makeweb import Doc, h1, div
+    from makeweb.html import Doc, h1, div
 
     doc = Doc()
     with div(id="atest"):
@@ -213,7 +213,7 @@ def test_tag_context():
 
 
 def test_tag_context_2():
-    from makeweb import Doc, h1, div
+    from makeweb.html import Doc, h1, div
 
     doc = Doc()
     with div(id="atest"):
@@ -223,7 +223,7 @@ def test_tag_context_2():
 
 
 def test_tag_context_3():
-    from makeweb import Doc, h1, div
+    from makeweb.html import Doc, h1, div
 
     doc = Doc()
     with div(id="atest"):
@@ -239,7 +239,7 @@ def test_tag_context_3():
 
 
 def test_void_tag():
-    from makeweb import Doc, img
+    from makeweb.html import Doc, img
 
     doc = Doc()
     img(alt="test")
@@ -247,7 +247,7 @@ def test_void_tag():
 
 
 def test_text_tag():
-    from makeweb import Doc, Text
+    from makeweb.html import Doc, Text
 
     doc = Doc()
     Text("Namaskaar!")
@@ -269,7 +269,8 @@ def test_css():
 
 
 def test_css_embed():
-    from makeweb import CSS, Doc, style
+    from makeweb import CSS, Doc
+    from makeweb.html import style
 
     css = CSS()
     css("body", background_color="black", color="green")
@@ -304,7 +305,8 @@ def test_js_script():
 
 
 def test_js_function_embed():
-    from makeweb import JS, Doc, script
+    from makeweb import JS, Doc
+    from makeweb.html import script
 
     js = JS()
 
@@ -319,7 +321,8 @@ def test_js_function_embed():
 
 
 def test_js_script_embed():
-    from makeweb import JS, Doc, script
+    from makeweb import JS, Doc
+    from makeweb.html import script
 
     js = JS()
 
@@ -335,12 +338,12 @@ def test_js_script_embed():
 
 def test_import_deprecated_tag_warning():
     with pytest.warns(UserWarning):
-        from makeweb import blink
+        from makeweb.html import blink
 
 
 def test_import_unknown_tag_warning():
     with pytest.warns(UserWarning):
-        from makeweb import meh
+        from makeweb.html import meh
 
 
 def test_text_escaping():

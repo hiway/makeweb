@@ -8,7 +8,7 @@
 from flask import Flask, Response
 
 # Import Doc and two html elements from makeweb.
-from makeweb import Doc, body, h1
+from makeweb.html import Doc, body, h1
 
 # MakeWeb uses Python's dynamic capabilities
 # to perform interesting tricks.

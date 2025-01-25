@@ -55,6 +55,8 @@ from makeweb import (
     Doc,
     CSS,
     JS,
+)
+from makeweb.html import (
     head,
     title,
     style,

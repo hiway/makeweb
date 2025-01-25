@@ -23,7 +23,7 @@ from faker import Faker
 # Also, markdown to automatically format the content.
 from markdown import markdown
 
-from makeweb import (
+from makeweb.html import (
     Doc,
     head,
     link,
