@@ -461,9 +461,9 @@ def render_content(doc, topic, content, create, results):
     if results:  # Don't link "Results for..."
         h1(topic, id="topic")
     elif create:  # When editing, clicking on topic h1 cancels edit operation.
-        a(h1(topic, id="topic"), href="/{}".format(topic), cls="topic-h1")
+        a(h1(topic, id="topic"), href="/{}".format(topic.lower()), cls="topic-h1")
     else:  # When viewing, clicking on topic h1 opens edit form.
-        a(h1(topic, id="topic"), href="/{}/edit".format(topic), cls="topic-h1")
+        a(h1(topic, id="topic"), href="/{}/edit".format(topic.lower()), cls="topic-h1")
     if create:
         div(render_content_form(topic, content), id="content-edit")
     else:
@@ -486,7 +486,12 @@ def render_footer(doc, count):
 
 
 def render_markdown(content):
-    content = re.sub(r"\[\[(\w+)\]\]", r'<a href="/\1">\1<a>', content)
+    # Update wiki link pattern to ensure lowercase URLs
+    content = re.sub(
+        r"\[\[(\w+)\]\]",
+        lambda m: f'<a href="/{m.group(1).lower()}">{m.group(1)}</a>',
+        content,
+    )
     return markdown.markdown(content)
 
 
@@ -508,7 +513,7 @@ def render_search_results(query, results):
     with ul(id="search-results"):
         for topic, content in results.items():
             with li():
-                h5(a(topic, href="/{}".format(topic)))
+                h5(a(topic, href="/{}".format(topic.lower())))
                 p(content)
     return doc
 
@@ -566,18 +571,34 @@ def save():
 
 @app.route("/<topic>")
 def topic_page(topic):
-    content = fetch_topic(topic).get(topic) or ""
-    create = False if content else True
+    # Look up topic using lowercase but preserve original case for display
+    content_dict = fetch_topic(topic.lower())
+    if content_dict:
+        # Use the original case from database
+        original_topic = list(content_dict.keys())[0]
+        content = content_dict[original_topic]
+        create = False
+    else:
+        original_topic = topic
+        content = ""
+        create = True
     count = count_topics()
-    return Response(render_base(topic, content, create, count))
+    return Response(render_base(original_topic, content, create, count))
 
 
 @app.route("/<topic>/edit")
 def topic_edit(topic):
-    content = fetch_topic(topic).get(topic) or ""
+    # Similar case handling for edit route
+    content_dict = fetch_topic(topic.lower())
+    if content_dict:
+        original_topic = list(content_dict.keys())[0]
+        content = content_dict[original_topic]
+    else:
+        original_topic = topic
+        content = ""
     create = True
     count = count_topics()
-    return Response(render_base(topic, content, create, count))
+    return Response(render_base(original_topic, content, create, count))
 
 
 @app.route("/search")
@@ -592,8 +613,13 @@ def search_form():
 @app.route("/search", methods=["post"])
 def search_post():
     query = request.form.get("query") or ""
-    topic = "Results for {}".format(query)
     results = search_topics(query)
+
+    # If no results and query is a valid topic name (single word)
+    if not results and query.strip() and " " not in query:
+        return redirect(f"/{query}")  # Redirect to create new topic
+
+    topic = "Results for {}".format(query)
     content = render_search_results(query, results)
     create = False
     count = count_topics()
@@ -604,8 +630,13 @@ def search_post():
 
 @app.route("/search/<query>")
 def search_manual(query):
-    topic = "Results for {}".format(query)
     results = search_topics(query)
+
+    # If no results and query is a valid topic name (single word)
+    if not results and query.strip() and " " not in query:
+        return redirect(f"/{query}")  # Redirect to create new topic
+
+    topic = "Results for {}".format(query)
     content = render_search_results(query, results)
     create = False
     count = count_topics()
