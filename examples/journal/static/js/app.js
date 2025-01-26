@@ -290,4 +290,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial icon update
     updateNotificationIcon();
+
+    const preferencesBtn = document.getElementById('preferences');
+    const preferencesList = document.createElement('div');
+    preferencesList.className = 'preferences-list hidden';
+    preferencesList.innerHTML = `
+        <div class="preferences-content">
+            <div class="empty-preferences">
+                ${getIconHtml('settings')}
+                <p>No preferences configured</p>
+            </div>
+        </div>
+    `;
+    sidebar.appendChild(preferencesList);
+
+    preferencesBtn.addEventListener('click', () => {
+        // Close notifications if open
+        notificationsList.classList.add('hidden');
+        notificationsBtn.classList.remove('drawer-open');
+
+        // Toggle preferences
+        preferencesList.classList.toggle('hidden');
+        preferencesBtn.classList.toggle('drawer-open');
+    });
+
+    // Close drawers when clicking elsewhere
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#notifications') && !e.target.closest('.notifications-list')) {
+            notificationsList.classList.add('hidden');
+            notificationsBtn.classList.remove('drawer-open');
+        }
+        if (!e.target.closest('#preferences') && !e.target.closest('.preferences-list')) {
+            preferencesList.classList.add('hidden');
+            preferencesBtn.classList.remove('drawer-open');
+        }
+    });
 });

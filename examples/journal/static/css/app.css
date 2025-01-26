@@ -685,3 +685,75 @@ body {
 }
 
 /* Remove the old attention animation */
+
+/* Preferences button specific styles */
+#preferences {
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1.2),
+        box-shadow 0.2s ease;
+    transform-origin: center;
+    border-radius: 8px;
+}
+
+#preferences.drawer-open {
+    background: rgba(127, 127, 127, 0.2);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateY(1px);
+}
+
+#preferences.drawer-open .icon {
+    opacity: 1;
+}
+
+#preferences:active {
+    transform: scale(0.85) rotate(-8deg);
+}
+
+#preferences:hover .icon {
+    transform: rotate(12deg);
+}
+
+/* Preferences drawer styles */
+.preferences-list {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    bottom: var(--toolbar-height);
+    left: 0;
+    right: 0;
+    background: var(--bg-color);
+    border-top: 1px solid var(--border-color);
+    max-height: 60vh;
+}
+
+.preferences-list.hidden {
+    display: none;
+}
+
+.preferences-content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.75rem;
+}
+
+.empty-preferences {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem 1rem;
+    color: var(--text-color);
+    opacity: 0.5;
+}
+
+.empty-preferences .icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.empty-preferences p {
+    font-size: 0.9rem;
+    font-weight: 500;
+    font-family: var(--font-stack);
+}
