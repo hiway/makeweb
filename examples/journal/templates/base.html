@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Journal App - {% block title %}{% endblock %}</title>
+    <script>
+        // Initialize theme before content loads
+        const theme = localStorage.getItem('theme') || 'auto';
+        document.documentElement.setAttribute('data-theme', theme);
+        if (theme === 'auto') {
+            if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+                document.documentElement.classList.add('dark');
+            }
+        } else if (theme === 'dark') {
+            document.documentElement.classList.add('dark');
+        }
+    </script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+
+<body>
+    <div class="layout">
+        <aside class="sidebar">
+            <div class="search-container">
+                <input type="text" id="search" placeholder="Search...">
+                <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search">
+            </div>
+
+            <nav class="journal-list">
+                <!-- Will be populated by JS -->
+            </nav>
+
+            <div class="toolbar">
+                <button id="preferences">
+                    <img src="{{ url_for('static', filename='icons/settings.svg') }}" alt="Preferences">
+                </button>
+                <button id="theme-toggle">
+                    <img src="{{ url_for('static', filename='icons/auto_mode.svg') }}" alt="Theme">
+                </button>
+                <button id="notifications">
+                    <img src="{{ url_for('static', filename='icons/notifications.svg') }}" alt="Notifications">
+                </button>
+            </div>
+        </aside>
+
+        <main class="content">
+            <button id="menu-toggle" class="mobile-only">
+                <img src="{{ url_for('static', filename='icons/menu.svg') }}" alt="Menu">
+            </button>
+            {% block content %}{% endblock %}
+        </main>
+    </div>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+
+</html>
