@@ -50,7 +50,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const icons = themeToggle.querySelectorAll('svg');
         icons.forEach(icon => {
             const iconName = icon.getAttribute('data-icon');
-            icon.style.display = iconName === `${theme}_mode` ? 'block' : 'none';
+            const isActive = iconName === `${theme}_mode`;
+            icon.setAttribute('data-active', isActive);
         });
     }
 
