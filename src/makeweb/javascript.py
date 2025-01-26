@@ -52,7 +52,7 @@ class JS(object):
         doc.elements.append(self)
 
 
-class JavaScript:
+class javascript_module:
     def __getattr__(self, name):
         if name.startswith("__"):
             return self.__getattribute__(name)
@@ -62,4 +62,4 @@ class JavaScript:
         return object
 
 
-_sys.modules[__name__] = JavaScript()
+_sys.modules[__name__] = javascript_module()
