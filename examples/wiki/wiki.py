@@ -58,34 +58,8 @@ import sqlite3
 
 # Makeweb, it a me!
 #  Run `pip install makeweb` to install MakeWeb.
-from makeweb.html import (
-    # First, the HTML Document class...
-    Doc,
-    # Then tags needed to build the `head` section.
-    head,
-    title,
-    meta,
-    link,
-    # Commonly used tags for the `body` section.
-    body,
-    nav,
-    hr,
-    div,
-    ul,
-    li,
-    a,
-    # Tags for content.
-    h1,
-    h3,
-    h5,
-    p,
-    # Tags for forms. Since `input` is a Python built-in name,
-    # we can avoid clashes by importing with an underscore before its name.
-    form,
-    _input,
-    textarea,
-    button,
-)
+from makeweb import Doc
+from makeweb.html import *
 
 # And that concludes our imports!
 #
