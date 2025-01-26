@@ -322,3 +322,64 @@ async def test_backlinks(journal):
     # Test reference context
     contexts = [b["context"] for b in backlinks]
     assert "Target block" in contexts
+
+
+async def test_get_connected_blocks(journal):
+    """Test retrieving connected blocks with filters."""
+    # Create a network of blocks
+    root_id = await journal.create_block("Root", "note")
+    child1_id = await journal.create_child_block(root_id, "Child 1", "task")
+    child2_id = await journal.create_child_block(root_id, "Child 2", "note")
+    grandchild_id = await journal.create_child_block(
+        child1_id, "[[Child 2]] reference", "note"
+    )
+
+    # Test basic connectivity
+    blocks = await journal.get_connected_blocks(root_id, include_refs=False)
+    assert len(blocks) == 4  # root + child1 + child2 + grandchild
+    block_ids = {b["id"] for b in blocks}
+    assert block_ids == {root_id, child1_id, child2_id, grandchild_id}
+
+    # Test distance limit
+    blocks = await journal.get_connected_blocks(root_id, max_distance=1)
+    assert len(blocks) == 3  # root + 2 children
+
+    # Test type filter
+    blocks = await journal.get_connected_blocks(root_id, block_types=["task"])
+    assert len(blocks) == 1
+    assert blocks[0]["id"] == child1_id
+
+    # Test reference inclusion
+    blocks = await journal.get_connected_blocks(child2_id, include_refs=True)
+    assert len(blocks) == 2  # child2 + grandchild (via reference)
+    block_ids = {b["id"] for b in blocks}
+    assert block_ids == {child2_id, grandchild_id}
+
+    # Test with both tree and reference traversal
+    blocks = await journal.get_connected_blocks(root_id, include_refs=True)
+    assert len(blocks) == 4  # Same blocks, just includes reference connections
+    block_ids = {b["id"] for b in blocks}
+    assert block_ids == {root_id, child1_id, child2_id, grandchild_id}
+
+
+async def test_get_graph(journal):
+    """Test generating graph representation."""
+    # Create a network of blocks
+    root_id = await journal.create_block("Root", "note")
+    child1_id = await journal.create_child_block(root_id, "Child 1", "note")
+    child2_id = await journal.create_child_block(root_id, "Child 2", "note")
+    await journal.create_block("[[Child 1]] links to [[Child 2]]", "note")
+
+    # Get full graph
+    graph = await journal.get_graph()
+    assert len(graph["nodes"]) >= 4
+
+    # Verify edge types
+    link_edges = [e for e in graph["edges"] if e["type"] == "link"]
+    ref_edges = [e for e in graph["edges"] if e["type"] == "reference"]
+    assert len(link_edges) >= 2  # At least 2 parent-child links
+    assert len(ref_edges) >= 2  # At least 2 reference links
+
+    # Test subgraph from root
+    subgraph = await journal.get_graph(root_id, max_distance=1)
+    assert len(subgraph["nodes"]) == 3  # root + 2 children

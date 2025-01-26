@@ -4,9 +4,10 @@ Implement Graph DB for Journal
 
 import aiosqlite
 import asyncio
-from datetime import datetime
-from typing import List, Set, Optional, Dict, Any
+from datetime import datetime, timedelta
+from typing import List, Set, Optional, Dict, Any, Union
 from uuid import uuid4
+from collections import deque
 
 
 class Journal:
@@ -464,3 +465,158 @@ class Journal:
         # Implementation for ordering would go here
         # This would require adding an 'order' column to the links table
         return True
+
+    async def get_connected_blocks(
+        self,
+        start_id: str,
+        max_distance: int = -1,
+        block_types: Optional[List[str]] = None,
+        since: Optional[Union[datetime, timedelta]] = None,
+        include_refs: bool = True,
+    ) -> List[Dict[str, Any]]:
+        """Get all blocks connected to the start block within given constraints."""
+        visited = set()
+        result = []
+        queue = deque([(start_id, 0)])  # (block_id, distance)
+
+        while queue:
+            current_id, distance = queue.popleft()
+            if current_id in visited:
+                continue
+
+            if max_distance >= 0 and distance > max_distance:
+                continue
+
+            visited.add(current_id)
+            block = await self.get_block(current_id)
+            if not block:
+                continue
+
+            if not block_types or block["type"] in block_types:
+                result.append(block)
+
+            # Get connected blocks
+            if include_refs:
+                # Add reference connections
+                async with self.db.execute(
+                    "SELECT target_id FROM block_references WHERE source_id = ?",
+                    (current_id,),
+                ) as cursor:
+                    refs = await cursor.fetchall()
+                    for ref in refs:
+                        if ref[0] not in visited:
+                            queue.append((ref[0], distance + 1))
+
+                async with self.db.execute(
+                    "SELECT source_id FROM block_references WHERE target_id = ?",
+                    (current_id,),
+                ) as cursor:
+                    backrefs = await cursor.fetchall()
+                    for ref in backrefs:
+                        if ref[0] not in visited:
+                            queue.append((ref[0], distance + 1))
+
+            # Always process direct tree connections
+            children = await self.get_children(current_id)
+            for child in children:
+                if child["id"] not in visited:
+                    queue.append((child["id"], distance + 1))
+
+        return result
+
+    async def _traverse_tree(
+        self,
+        block_id: str,
+        max_distance: int = -1,
+        distance: int = 0,
+        visited: Optional[Set[str]] = None,
+    ) -> Set[str]:
+        """Helper method to traverse tree and collect block IDs within distance."""
+        if visited is None:
+            visited = set()
+
+        if max_distance >= 0 and distance > max_distance:
+            return visited
+
+        visited.add(block_id)
+
+        # Get direct children
+        children = await self.get_children(block_id)
+        for child in children:
+            if child["id"] not in visited:
+                await self._traverse_tree(
+                    child["id"], max_distance, distance + 1, visited
+                )
+
+        return visited
+
+    async def get_graph(
+        self,
+        root_id: Optional[str] = None,
+        max_distance: int = -1,
+        block_types: Optional[List[str]] = None,
+        since: Optional[Union[datetime, timedelta]] = None,
+    ) -> Dict[str, Any]:
+        """Generate a graph representation of connected blocks."""
+        nodes = []
+        edges = set()  # Using set to avoid duplicate edges
+
+        # Get connected blocks
+        if root_id:
+            block_ids = await self._traverse_tree(root_id, max_distance)
+        else:
+            async with self.db.execute("SELECT id FROM blocks") as cursor:
+                block_ids = {row[0] async for row in cursor}
+
+        # Filter blocks and collect nodes
+        filtered_ids = set()
+        for block_id in block_ids:
+            block = await self.get_block(block_id)
+            if block:
+                if block_types and block["type"] not in block_types:
+                    continue
+                if since:
+                    since_dt = (
+                        since if isinstance(since, datetime) else datetime.now() - since
+                    )
+                    if datetime.fromisoformat(block["updated_at"]) < since_dt:
+                        continue
+                filtered_ids.add(block_id)
+                nodes.append(block)
+
+        # Collect edges
+        for block_id in filtered_ids:
+            # Add direct links
+            async with self.db.execute(
+                """
+                SELECT source_id, target_id FROM links 
+                WHERE (source_id = ? OR target_id = ?) 
+                AND source_id IN ({0}) AND target_id IN ({0})
+                """.format(
+                    ",".join("?" * len(filtered_ids))
+                ),
+                (block_id, block_id, *filtered_ids, *filtered_ids),
+            ) as cursor:
+                async for row in cursor:
+                    edges.add((row[0], row[1], "link"))
+
+            # Add reference edges
+            async with self.db.execute(
+                """
+                SELECT source_id, target_id FROM block_references 
+                WHERE (source_id = ? OR target_id = ?)
+                AND source_id IN ({0}) AND target_id IN ({0})
+                """.format(
+                    ",".join("?" * len(filtered_ids))
+                ),
+                (block_id, block_id, *filtered_ids, *filtered_ids),
+            ) as cursor:
+                async for row in cursor:
+                    edges.add((row[0], row[1], "reference"))
+
+        return {
+            "nodes": nodes,
+            "edges": [
+                {"source": s, "target": t, "type": type_} for s, t, type_ in edges
+            ],
+        }
