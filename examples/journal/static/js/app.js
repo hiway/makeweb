@@ -6,10 +6,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const themeIcon = themeToggle.querySelector('img');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)');
 
+    // Function to update menu icons based on sidebar visibility
+    function updateMenuIcons() {
+        const isVisible = sidebar.classList.contains('visible');
+        menuToggle.querySelector('svg[data-icon="menu"]').setAttribute('data-active', !isVisible);
+        menuToggle.querySelector('svg[data-icon="menu_open"]').setAttribute('data-active', isVisible);
+    }
+
     // Mobile menu toggle
     menuToggle.addEventListener('click', () => {
         sidebar.classList.toggle('visible');
         localStorage.setItem('sidebarVisible', sidebar.classList.contains('visible'));
+        updateMenuIcons();
     });
 
     // Initialize sidebar state on wide screens
@@ -20,6 +28,7 @@ document.addEventListener('DOMContentLoaded', () => {
             // Show sidebar by default unless explicitly hidden before
             sidebar.classList.toggle('visible', storedState !== 'false');
         }
+        updateMenuIcons();
     }
 
     // Initialize sidebar on load

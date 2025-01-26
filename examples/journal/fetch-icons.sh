@@ -11,6 +11,7 @@ LICENSE_URL="https://raw.githubusercontent.com/marella/material-symbols/refs/hea
 icons=(
     "search"           # For search input
     "menu"             # For mobile menu toggle
+    "menu_open"        # Add this new icon
     "settings"         # For preferences button
     "night_sight_auto" # For auto night mode
     "dark_mode"        # For theme toggle (dark mode state)

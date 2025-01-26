@@ -975,3 +975,52 @@ body {
 .top-toolbar button:hover {
     background-color: rgba(127, 127, 127, 0.1);
 }
+
+.menu-icon {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.menu-icon svg {
+    position: absolute;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+}
+
+/* Show active icon */
+.menu-icon svg[data-active="true"] {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Menu toggle button specific styles */
+#menu-toggle {
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1.2),
+        box-shadow 0.2s ease;
+    transform-origin: center;
+    border-radius: 8px;
+}
+
+#menu-toggle.drawer-open {
+    background: rgba(127, 127, 127, 0.2);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateY(1px);
+}
+
+#menu-toggle:active {
+    transform: scale(0.85) rotate(-8deg);
+}
+
+#menu-toggle .menu-icon {
+    transform-origin: center;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#menu-toggle:hover .menu-icon {
+    transform: rotate(12deg);
+}
