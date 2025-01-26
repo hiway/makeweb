@@ -60,6 +60,7 @@ import sqlite3
 #  Run `pip install makeweb` to install MakeWeb.
 from makeweb import Doc
 from makeweb.html import *
+from makeweb import CSS
 
 # And that concludes our imports!
 #
@@ -94,6 +95,145 @@ NAV = {
 }
 
 SEARCH_FRAGMENT_LENGTH = 250
+
+css = CSS()
+
+# Add modern styling
+css(
+    "*,body",
+    margin="0",
+    padding="0",
+    font_family=(
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', "
+        "Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', "
+        "'Helvetica Neue', sans-serif"
+    ),
+    font_size="18px",
+    box_sizing="border-box",
+    color="#2c3e50",
+)
+
+css("html, body", height="100%", background_color="#f5f6fa")
+
+css(
+    ".page",
+    display="flex",
+    flex_direction="column",
+    min_height="100vh",
+    max_width="800px",
+    margin="0 auto",
+    background_color="white",
+    box_shadow="0 0 20px rgba(0,0,0,0.05)",
+)
+
+css(
+    "nav",
+    padding="1rem",
+    background_color="white",
+    border_bottom="1px solid #eee",
+)
+
+css(
+    ".navli",
+    display="inline-block",
+    margin_right="1rem",
+)
+
+css(
+    "nav a",
+    color="#3498db",
+    text_decoration="none",
+)
+
+css(
+    "#content-wrap",
+    flex_grow="1",
+    padding="2rem",
+    animation="fadeIn 0.3s ease-in",
+)
+
+css(
+    "#topic",
+    margin="0 0 1.5rem 0",
+    color="#2c3e50",
+    font_size="2rem",
+)
+
+css(
+    ".topic-h1",
+    text_decoration="none",
+    color="#2c3e50",
+)
+
+css(
+    "#content-display",
+    line_height="1.6",
+)
+
+css(
+    "#content-box",
+    width="100%",
+    padding="1rem",
+    border="1px solid #e1e1e1",
+    border_radius="0.5rem",
+    margin_bottom="1rem",
+    font_family="inherit",
+    resize="vertical",
+)
+
+css(
+    "#content-save",
+    background_color="#3498db",
+    color="white",
+    border="none",
+    padding="0.8rem 1.5rem",
+    border_radius="0.5rem",
+    cursor="pointer",
+    transition="background-color 0.2s ease",
+)
+
+css(
+    "#content-save:hover",
+    background_color="#2980b9",
+)
+
+css(
+    "#search-results li",
+    list_style="none",
+    padding="1rem",
+    margin_bottom="1rem",
+    border_radius="0.5rem",
+    background_color="#f8f9fa",
+    transition="transform 0.2s ease",
+)
+
+css(
+    "#search-results li:hover",
+    transform="translateX(5px)",
+)
+
+css(
+    "#query",
+    padding="0.8rem 1rem",
+    border="1px solid #e1e1e1",
+    border_radius="0.5rem",
+    margin_right="0.5rem",
+    width="300px",
+)
+
+css(
+    "#footer",
+    padding="1rem",
+    text_align="center",
+    background_color="white",
+    border_top="1px solid #eee",
+)
+
+css(
+    "@keyframes fadeIn",
+    _from={"opacity": "0", "transform": "translateY(10px)"},
+    _to={"opacity": "1", "transform": "translateY(0)"},
+)
 
 ##### Initialize long-running objects
 
@@ -205,46 +345,20 @@ def delete_topic(topic):
 
 
 def render_base(topic, content, create, count, results=False):
-    # First, define a variable named `doc` as an  instance of `Doc`.
-    # (it is important, MakeWeb will fail if you call a tag
-    # before defining a doc first).
     doc = Doc("html")
-    # With that in place, we can now generate our document structure.
     with head():
-        meta(charset="utf-8")  # Define charset first.
-        [meta(**{k: v}) for k, v in META.items()]  # Works with comprehensions.
-        title(topic)  # Title is required for valid html.
-
-        ## Uncomment the following line to apply a basic style.
-        # link(href='/static/normalize.css', _type='text/css', rel='stylesheet')
-
-        ## Try another, richer stylesheet? (source/credit at top of each file)
-        ## Uncomment only one of these lines (or normalize.css) at a time.
-        # link(href='/static/retro.css', _type='text/css', rel='stylesheet')
-        # link(href='/static/air.css', _type='text/css', rel='stylesheet')
-        # link(href='/static/ghpandoc.css', _type='text/css', rel='stylesheet')
-        # link(href='/static/markdown.css', _type='text/css', rel='stylesheet')
-
-        # Bare-minimum style tweaks.
-        link(href="/static/app.css", _type="text/css", rel="stylesheet")
-    with body(cls="markdown"):
-        # Break apart pieces of template using familiarity of functions.
-        # We pass `doc` to a template function that will modify
-        # the `doc` we are refering to in render_base(), in place.
-        render_nav(doc)
-        # Higher-level structure stays within base template.
-        with div(id="content-wrap"):
-            # Pass in any variables along with doc
-            # needed to render the template.
-            render_content(doc, topic, content, create, results)
-        # And now for something completely different...
-        # Let us work with better isolation within the templates.
-        # Below, we build a separate `doc` within render_footer()
-        # and plug in the generated html straight into a div.
-        # Doing so allows greater control over the overall layout from base.
-        div(render_footer(count), id="footer")
-    # We return rendered html by calling `str(doc)`.
-    # `doc` is no longer in scope and will be removed from memory automatically.
+        meta(charset="utf-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1")
+        [meta(**{k: v}) for k, v in META.items()]
+        title(topic)
+        with style():
+            css.embed()
+    with body():
+        with div(cls="page"):
+            render_nav(doc)
+            with div(id="content-wrap"):
+                render_content(doc, topic, content, create, results)
+            render_footer(doc, count)
     return str(doc)
 
 
@@ -258,7 +372,6 @@ def render_nav(doc):
 
 
 def render_content(doc, topic, content, create, results):
-    hr()
     if results:  # Don't link "Results for..."
         h1(topic, id="topic")
     elif create:  # When editing, clicking on topic h1 cancels edit operation.
@@ -271,7 +384,7 @@ def render_content(doc, topic, content, create, results):
         div(render_markdown(str(content)), id="content-display")
 
 
-def render_footer(count):
+def render_footer(doc, count):
     # Isolated fragments of doc are great for testing!
     doc = Doc()  # Note the missing doctype 'html', we skip it for fragments.
     hr()
