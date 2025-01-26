@@ -41,41 +41,6 @@ async def get_svg(name):
 app.jinja_env.globals["get_svg"] = get_svg
 
 
-async def broadcast_time():
-    while True:
-        current_time = datetime.now().strftime("%H:%M:%S")
-        severity = random.choice(SEVERITIES)
-
-        for queue in subscribers:
-            await queue.put(
-                {
-                    "id": str(uuid.uuid4()),
-                    "severity": severity,
-                    "title": "Current Time",
-                    "message": f"The server time is {current_time}",
-                    "timestamp": datetime.now().isoformat(),
-                }
-            )
-
-        await asyncio.sleep(5)
-
-
-@app.before_serving
-async def startup():
-    global notification_task
-    notification_task = asyncio.create_task(broadcast_time())
-
-
-@app.after_serving
-async def cleanup():
-    if notification_task:
-        notification_task.cancel()
-        try:
-            await notification_task
-        except asyncio.CancelledError:
-            pass
-
-
 @app.route("/")
 async def index():
     today = datetime.now().strftime("%B %d, %Y")
