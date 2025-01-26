@@ -88,3 +88,25 @@ def test_javascript_dummy_objects():
     assert isinstance(window, object)
     assert console is not None
     assert isinstance(console, object)
+
+
+def test_js_no_minify():
+    js = JS(minify=False)
+
+    @js.function
+    def test():
+        x = 1
+        y = 2
+        return x + y
+
+    assert (
+        str(js)
+        == """\
+function test() {
+    var x, y;
+    x = 1;
+    y = 2;
+    return (x + y);
+}
+"""
+    )

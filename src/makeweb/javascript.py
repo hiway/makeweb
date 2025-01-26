@@ -5,9 +5,21 @@ from .html import Doc
 from .utilities import get_local_variable_from_caller
 
 
+def _try_minify(js_code, do_minify=True):
+    if not do_minify:
+        return js_code
+    try:
+        from jsmin import jsmin
+
+        return jsmin(js_code)
+    except ImportError:  # pragma: no cover
+        raise ImportError("Please `pip install jsmin` to minify JavaScript code.")
+
+
 class JS(object):
-    def __init__(self):
+    def __init__(self, minify=True):
         self.funcs = []
+        self.minify = minify
 
     def __str__(self):
         return "".join([f for f in self.funcs])
@@ -19,13 +31,6 @@ class JS(object):
             raise ImportError(
                 "Please `pip install javascripthon` " "to use @js.function decorator."
             )
-        try:  # pragma: no cover
-            from jsmin import jsmin as _js_minify
-        except ImportError as e:  # pragma: no cover
-            raise ImportError(
-                "Please `pip install jsmin` " "to use @js.function decorator."
-            )
-
         source = _inspect.getsource(func)
         source = "\n".join(
             [
@@ -34,7 +39,8 @@ class JS(object):
                 if not any(l.strip().startswith(b) for b in ["from mkwebpage", "@"])
             ]
         )
-        self.funcs.append(_js_minify(_python_to_javascript(source)[0]))
+        js_code = _python_to_javascript(source)[0]
+        self.funcs.append(_try_minify(js_code, self.minify))
         return func
 
     def script(self, func):
