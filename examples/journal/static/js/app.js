@@ -129,31 +129,46 @@ document.addEventListener('DOMContentLoaded', () => {
         const notifications = getNotifications();
         const clearState = getClearButtonState(notifications);
 
-        notificationsList.innerHTML = notifications.length
-            ? `
-                ${clearState ? `<button class="clear-all">${clearState.text}</button>` : ''}
-                ${notifications.map(n => `
-                    <div class="notification ${n.severity}" data-id="${n.id}">
-                        <div class="notification-header">
-                            <div class="notification-title">
-                                <span class="severity-icon">${getIconHtml(severityIcons[n.severity])}</span>
-                                <span class="title">${n.title}</span>
-                            </div>
-                            <button class="dismiss" title="Dismiss">${getIconHtml('close')}</button>
+        // Clear the list first
+        notificationsList.innerHTML = '';
+
+        // Create notifications content
+        const content = document.createElement('div');
+        content.className = 'notifications-content';
+        content.innerHTML = notifications.length
+            ? notifications.map(n => `
+                <div class="notification ${n.severity}" data-id="${n.id}">
+                    <div class="notification-header">
+                        <div class="notification-title">
+                            <span class="severity-icon">${getIconHtml(severityIcons[n.severity])}</span>
+                            <span class="title">${n.title}</span>
                         </div>
-                        <div class="message">${n.message}</div>
-                        <div class="timestamp">
-                            ${getIconHtml('schedule')}
-                            ${new Date(n.timestamp).toLocaleString()}
-                        </div>
+                        <button class="dismiss" title="Dismiss">${getIconHtml('close')}</button>
                     </div>
-                `).join('')}`
+                    <div class="message">${n.message}</div>
+                    <div class="timestamp">
+                        ${getIconHtml('schedule')}
+                        ${new Date(n.timestamp).toLocaleString()}
+                    </div>
+                </div>
+            `).join('')
             : `
                 <div class="empty-notifications">
                     ${getIconHtml('notifications')}
                     <p>No notifications</p>
                 </div>
             `;
+
+        // Add content first
+        notificationsList.appendChild(content);
+
+        // Then add clear button container
+        const clearContainer = document.createElement('div');
+        clearContainer.className = 'clear-button-container';
+        clearContainer.innerHTML = clearState
+            ? `<button class="clear-all">${clearState.text}</button>`
+            : '';
+        notificationsList.appendChild(clearContainer);
     }
 
     const severityPriority = {
