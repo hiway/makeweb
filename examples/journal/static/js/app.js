@@ -35,9 +35,23 @@ document.addEventListener('DOMContentLoaded', () => {
         return cycle[(cycle.indexOf(currentTheme) + 1) % cycle.length];
     }
 
+    function getIconHtml(name) {
+        const existingSvg = document.querySelector(`svg[data-icon="${name}"]`);
+        if (existingSvg) {
+            const svgClone = existingSvg.cloneNode(true);
+            return svgClone.outerHTML;
+        }
+        console.warn(`SVG icon ${name} not found`);
+        return '';
+    }
+
     function updateThemeIcon(theme) {
-        const iconBase = themeIcon.src.substring(0, themeIcon.src.lastIndexOf('/') + 1);
-        themeIcon.src = `${iconBase}${theme}_mode.svg`;
+        const themeToggle = document.getElementById('theme-toggle');
+        const icons = themeToggle.querySelectorAll('svg');
+        icons.forEach(icon => {
+            const iconName = icon.getAttribute('data-icon');
+            icon.style.display = iconName === `${theme}_mode` ? 'block' : 'none';
+        });
     }
 
     function setTheme(theme) {
@@ -99,10 +113,6 @@ document.addEventListener('DOMContentLoaded', () => {
         warning: 'warning',
         error: 'error'
     };
-
-    function getIconHtml(name) {
-        return `<img src="${notificationsBtn.querySelector('img').src.replace('notifications', name)}" alt="${name}">`;
-    }
 
     function getNotificationsByType(notifications) {
         return notifications.reduce((acc, n) => {

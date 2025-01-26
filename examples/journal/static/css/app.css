@@ -427,6 +427,69 @@ body {
     font-family: var(--font-stack);
 }
 
+/* Base icon styles */
+.icon {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+    filter: var(--icon-filter);
+}
+
+/* Toolbar icons */
+.toolbar .icon {
+    opacity: 0.7;
+}
+
+/* Search container icon */
+.search-container .icon {
+    position: absolute;
+    right: 1.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    opacity: 0.5;
+}
+
+/* Notification severity icons */
+.notification .severity-icon .icon {
+    width: 18px;
+    height: 18px;
+    opacity: 1;
+    filter: none;
+}
+
+.notification.info .severity-icon .icon {
+    filter: var(--info-icon-filter);
+}
+
+.notification.success .severity-icon .icon {
+    filter: var(--success-icon-filter);
+}
+
+.notification.warning .severity-icon .icon {
+    filter: var(--warning-icon-filter);
+}
+
+.notification.error .severity-icon .icon {
+    filter: var(--error-icon-filter);
+}
+
+/* Notification timestamp icon */
+.notification .timestamp .icon {
+    width: 14px;
+    height: 14px;
+}
+
+/* Empty notifications icon */
+.empty-notifications .icon {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+/* Remove old img-specific rules */
+
 .notification .severity-icon img,
 .notification .dismiss img,
 .notification .timestamp img,
@@ -469,4 +532,62 @@ body {
 
 .notification.error .severity-icon img {
     filter: var(--error-icon-filter);
+}
+
+.toolbar button svg,
+.search-container svg,
+.notification svg,
+.empty-notifications svg {
+    width: 24px;
+    height: 24px;
+    fill: currentColor;
+    filter: var(--icon-filter);
+}
+
+.notification .severity-icon svg {
+    opacity: 1;
+    filter: none;
+}
+
+.notification.info .severity-icon svg {
+    filter: var(--info-icon-filter);
+}
+
+.notification.success .severity-icon svg {
+    filter: var(--success-icon-filter);
+}
+
+.notification.warning .severity-icon svg {
+    filter: var(--warning-icon-filter);
+}
+
+.notification.error .severity-icon svg {
+    filter: var(--error-icon-filter);
+}
+
+.notification .timestamp svg {
+    width: 14px;
+    height: 14px;
+}
+
+.empty-notifications svg {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+/* Theme toggle specific styles */
+.theme-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.theme-icon svg {
+    display: none;
+}
+
+.theme-icon svg[data-icon="auto_mode"] {
+    display: block;
 }

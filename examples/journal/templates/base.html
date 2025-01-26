@@ -1,3 +1,4 @@
+{% from 'macros.html' import svg %}
 <!DOCTYPE html>
 <html lang="en">
 
@@ -25,7 +26,7 @@
         <aside class="sidebar">
             <div class="search-container">
                 <input type="text" id="search" placeholder="Search...">
-                <img src="{{ url_for('static', filename='icons/search.svg') }}" alt="Search">
+                {{ svg('search') }}
             </div>
 
             <nav class="journal-list">
@@ -34,20 +35,24 @@
 
             <div class="toolbar">
                 <button id="preferences">
-                    <img src="{{ url_for('static', filename='icons/settings.svg') }}" alt="Preferences">
+                    {{ svg('settings') }}
                 </button>
                 <button id="theme-toggle">
-                    <img src="{{ url_for('static', filename='icons/auto_mode.svg') }}" alt="Theme">
+                    <span class="theme-icon">
+                        {{ svg('auto_mode') }}
+                        {{ svg('light_mode') }}
+                        {{ svg('dark_mode') }}
+                    </span>
                 </button>
                 <button id="notifications">
-                    <img src="{{ url_for('static', filename='icons/notifications.svg') }}" alt="Notifications">
+                    {{ svg('notifications') }}
                 </button>
             </div>
         </aside>
 
         <main class="content">
             <button id="menu-toggle" class="mobile-only">
-                <img src="{{ url_for('static', filename='icons/menu.svg') }}" alt="Menu">
+                {{ svg('menu') }}
             </button>
             {% block content %}{% endblock %}
         </main>

@@ -4,16 +4,41 @@ Journal App
 
 from quart import Quart, render_template, Response, request
 from datetime import datetime
+import aiofiles
 import asyncio
 import json
 import uuid
 import random
+import os
 
 app = Quart(__name__)
 subscribers = set()
 notification_task = None
 
 SEVERITIES = ["info", "success", "warning", "error"]
+
+# Cache for SVG contents
+svg_cache = {}
+
+
+async def get_svg(name):
+    """Load and cache SVG content asynchronously"""
+    if name not in svg_cache:
+        svg_path = os.path.join(app.static_folder, "icons", f"{name}.svg")
+        try:
+            async with aiofiles.open(svg_path, "r") as f:
+                content = await f.read()
+                # Add data-icon attribute to svg element
+                svg_cache[name] = content.replace(
+                    "<svg ", f'<svg data-icon="{name}" class="icon" ', 1
+                )
+        except FileNotFoundError:
+            return f"<!-- SVG {name} not found -->"
+    return svg_cache[name]
+
+
+# Make async svg loader available to templates
+app.jinja_env.globals["get_svg"] = get_svg
 
 
 async def broadcast_time():
