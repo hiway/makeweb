@@ -619,8 +619,20 @@ body {
 
 /* Notifications button specific styles */
 #notifications {
-    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1.2);
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1.2),
+        box-shadow 0.2s ease;
     transform-origin: center;
+    border-radius: 8px;
+}
+
+#notifications.drawer-open {
+    background: rgba(127, 127, 127, 0.2);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateY(1px);
+}
+
+#notifications.drawer-open .icon {
+    opacity: 1;
 }
 
 #notifications:active {
@@ -641,13 +653,35 @@ body {
 }
 
 @keyframes bell-ring {
-    0%, 100% { transform: rotate(0); }
-    15% { transform: rotate(15deg); }
-    30% { transform: rotate(-15deg); }
-    45% { transform: rotate(12deg); }
-    60% { transform: rotate(-12deg); }
-    75% { transform: rotate(8deg); }
-    90% { transform: rotate(-8deg); }
+
+    0%,
+    100% {
+        transform: rotate(0);
+    }
+
+    15% {
+        transform: rotate(15deg);
+    }
+
+    30% {
+        transform: rotate(-15deg);
+    }
+
+    45% {
+        transform: rotate(12deg);
+    }
+
+    60% {
+        transform: rotate(-12deg);
+    }
+
+    75% {
+        transform: rotate(8deg);
+    }
+
+    90% {
+        transform: rotate(-8deg);
+    }
 }
 
 /* Remove the old attention animation */

@@ -274,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     notificationsBtn.addEventListener('click', () => {
         notificationsList.classList.toggle('hidden');
+        notificationsBtn.classList.toggle('drawer-open');
         notificationsBtn.classList.remove('unread');
     });
 
