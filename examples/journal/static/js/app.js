@@ -317,6 +317,9 @@ document.addEventListener('DOMContentLoaded', () => {
     `;
     sidebar.appendChild(preferencesList);
 
+    // Remove the premature event listener setup since the container doesn't exist yet
+    // The event listener will be added when preferences are configured and the container is created
+
     preferencesBtn.addEventListener('click', () => {
         // Close notifications if open
         notificationsList.classList.add('hidden');
