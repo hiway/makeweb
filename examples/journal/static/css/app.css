@@ -646,6 +646,35 @@ body {
 }
 
 /* Theme toggle specific styles */
+#theme-toggle {
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1.2),
+        box-shadow 0.2s ease;
+    transform-origin: center;
+    border-radius: 8px;
+}
+
+/* Add inset effect when not in auto mode */
+[data-theme="light"] #theme-toggle,
+[data-theme="dark"] #theme-toggle {
+    background: rgba(127, 127, 127, 0.2);
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+    transform: translateY(1px);
+}
+
+#theme-toggle:active {
+    transform: scale(0.85) rotate(-8deg);
+}
+
+#theme-toggle .theme-icon {
+    transform-origin: center;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#theme-toggle:hover .theme-icon {
+    transform: rotate(12deg);
+}
+
+/* Theme icon container */
 .theme-icon {
     display: flex;
     align-items: center;
@@ -655,29 +684,40 @@ body {
     height: 24px;
 }
 
+/* Theme icon transitions */
 .theme-icon svg {
-    display: none;
     position: absolute;
-    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1),
-        opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-    transform: rotate(0deg);
-    opacity: 0;
     width: 100%;
     height: 100%;
-    border-radius: 50%;
-    /* Add rounded corners to icons */
+    opacity: 0;
+    transform: rotate(-90deg) scale(0.8);
+    pointer-events: none;
+    visibility: hidden;
+    /* Hide by default */
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1),
+        opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .theme-icon svg[data-active="true"] {
-    display: block;
-    transform: rotate(0deg);
     opacity: 1;
+    transform: rotate(0) scale(1);
+    visibility: visible;
+    /* Show only active icon */
 }
 
-.theme-icon svg[data-active="false"] {
-    display: block;
-    transform: rotate(-90deg);
+/* Make auto mode icon invisible when in forced theme mode */
+[data-theme="light"] .theme-icon svg[data-icon="auto_mode"],
+[data-theme="dark"] .theme-icon svg[data-icon="auto_mode"] {
+    visibility: hidden;
     opacity: 0;
+}
+
+/* Update initial state prevention */
+.initial .sidebar,
+.initial #menu-toggle,
+.initial .content,
+.initial .theme-icon svg {
+    transition: none !important;
 }
 
 /* Notifications button specific styles */
