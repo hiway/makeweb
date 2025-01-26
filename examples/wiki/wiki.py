@@ -54,9 +54,7 @@ import markdown
 # Run `pip install flask` to install Flask.
 from flask import Flask, Response, request, redirect
 
-# TinyDB is a ridiculously easy to use JSON-backed key-value store.
-#  Run `pip install tinydb` to install TinyDB.
-from tinydb import TinyDB, Query
+import sqlite3
 
 # Makeweb, it a me!
 #  Run `pip install makeweb` to install MakeWeb.
@@ -104,8 +102,7 @@ BASE_DIR = os.path.abspath(".")
 # Use 'static' directory under base to serve css.
 STATIC_DIR = os.path.join(BASE_DIR, "static/")
 
-# Our TinyDB database is a single json file!
-DB_PATH = os.path.join(BASE_DIR, "wiki.json")
+DB_PATH = os.path.join(BASE_DIR, "wiki.db")
 
 # Setting HTML META tags here, keeps code uncluttered when there are many.
 META = {
@@ -134,79 +131,91 @@ SEARCH_FRAGMENT_LENGTH = 250
 # and run the code as a server.
 app = Flask(__name__)
 
-# A TinyDB instance of our database.
-db = TinyDB(DB_PATH)
 
-# A Query object for TinyDB, which lets us write easy-to-read queries.
-Topic = Query()
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute(
+        """CREATE TABLE IF NOT EXISTS topics
+                 (topic text PRIMARY KEY, content text)"""
+    )
+    conn.commit()
+    conn.close()
+
+
+# Initialize the database
+init_db()
+
+
+# Helper function to get database connection
+def get_db():
+    return sqlite3.connect(DB_PATH)
 
 
 ##### Define api wrappers
 
-# When using a particular product to solve a problem,
-# such as TinyDB here to store data in an easy container,
-# if you have any doubts whether it will suffice your needs,
-# make it a point to encapsulate all access to the external code
-# in functions that are named after what they do for your app.
-#
-# Let us look back at the expected features list on top
-# and define some "CRUD" functions we seem to need.
-
 
 def count_topics():
-    return len(db)
+    with get_db() as db:
+        count = db.execute("SELECT COUNT(*) FROM topics").fetchone()[0]
+    return count
 
 
 def create_topic(topic, content):
-    db.insert({"topic": topic.lower(), "content": content})
+    with get_db() as db:
+        db.execute(
+            "INSERT INTO topics (topic, content) VALUES (?, ?)",
+            (topic.lower(), content),
+        )
+        db.commit()
 
 
 def fetch_topic(topic):
-    return {r["topic"]: r["content"] for r in db.search(Topic.topic == topic.lower())}
+    with get_db() as db:
+        result = db.execute(
+            "SELECT topic, content FROM topics WHERE topic = ?", (topic.lower(),)
+        ).fetchone()
+    return {result[0]: result[1]} if result else {}
 
 
 def search_topics(query):
-    # TinyDB does not have full text search,
-    # therefore, we use a very suboptimal method -
-    # loop through the entire db and search!
-    # Implementing with SQLite will give a **HUGE** performance boost here.
-    # However, for demonstration, TinyDB is cool.
-    results = {}  # {topic: content-fragment}
+    results = {}
     query_words = set(query.lower().split()) - {"and", "or", "the", "a", "an"}
 
-    def keep(topic, content):
-        if topic in results:
-            return
-        if len(content) > SEARCH_FRAGMENT_LENGTH:
-            content = content[:SEARCH_FRAGMENT_LENGTH]
-        results.update({topic: content})
-
-    for record in db.all():
-        topic, content = record["topic"], record["content"]
+    with get_db() as db:
         for word in query_words:
-            if word in topic:
-                keep(topic, content)
-            if word in content:
-                keep(topic, content)
+            word_pattern = f"%{word}%"
+            rows = db.execute(
+                """SELECT topic, content FROM topics 
+                               WHERE topic LIKE ? OR content LIKE ?""",
+                (word_pattern, word_pattern),
+            ).fetchall()
+            for topic, content in rows:
+                if topic not in results:
+                    content = (
+                        content[:SEARCH_FRAGMENT_LENGTH]
+                        if len(content) > SEARCH_FRAGMENT_LENGTH
+                        else content
+                    )
+                    results[topic] = content
     return results
 
 
 def save_topic(topic, content):
-    # An under-appreciated  benefit of wrapping external API calls
-    # within your functions -
-    # you get to control the vocabulary that creeps into your code.
-    db.upsert(
-        {"topic": topic.lower(), "content": content}, Topic.topic == topic.lower()
-    )
+    with get_db() as db:
+        db.execute(
+            """INSERT INTO topics (topic, content) VALUES (?, ?)
+                     ON CONFLICT(topic) DO UPDATE SET content = ?""",
+            (topic.lower(), content, content),
+        )
+        db.commit()
 
 
 def delete_topic(topic):
-    db.delete(Topic.topic == topic.lower())
+    with get_db() as db:
+        db.execute("DELETE FROM topics WHERE topic = ?", (topic.lower(),))
+        db.commit()
 
-
-# If we want to use, say, SQLite later for full-text search,
-# it is a matter of replacing the functions above
-# and modifying relevant imports.
 
 ##### Define template functions
 
