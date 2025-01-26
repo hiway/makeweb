@@ -304,11 +304,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     notificationsBtn.addEventListener('click', () => {
-        const isHidden = notificationsList.classList.contains('hidden');
-        if (isHidden) {
-            notificationsList.classList.remove('hidden');
-            notificationsBtn.classList.add('drawer-open');
-        }
+        // Toggle the drawer state instead of only opening it
+        notificationsList.classList.toggle('hidden');
+        notificationsBtn.classList.toggle('drawer-open');
         notificationsBtn.classList.remove('unread');
     });
 
