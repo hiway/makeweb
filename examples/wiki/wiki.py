@@ -58,9 +58,9 @@ import sqlite3
 
 # Makeweb, it a me!
 #  Run `pip install makeweb` to install MakeWeb.
-from makeweb import Doc
+from makeweb import Doc, CSS, JS
 from makeweb.html import *
-from makeweb import CSS
+from makeweb.javascript import document, window
 
 # And that concludes our imports!
 #
@@ -295,6 +295,22 @@ css(
     _to={"opacity": "1", "transform": "translateY(0)"},
 )
 
+js = JS()
+
+
+# Add keyboard shortcut handler function
+@js.function
+def handle_shortcuts(event):
+    if event.ctrlKey:
+        if event.key == "/":
+            event.preventDefault()  # Prevent browser's find dialog
+            search_input = document.querySelector("nav input[type='text']")
+            search_input.focus()
+        elif event.key == "?":
+            event.preventDefault()
+            window.location.href = "/"  # Navigate to home
+
+
 ##### Initialize long-running objects
 
 # We are going to need only one each of these Python objects,
@@ -413,13 +429,15 @@ def render_base(topic, content, create, count, results=False, query=""):
         title(topic)
         with style():
             css.embed()
-    with body():
+    with body(onkeydown="handle_shortcuts(event)"):  # Add event handler
         with div(cls="page"):
             render_nav(doc, query)  # Pass query to render_nav
             with div(cls="container"):  # Add container
                 with div(id="content-wrap"):
                     render_content(doc, topic, content, create, results)
             render_footer(doc, count)
+        with script():  # Add JavaScript
+            js.embed()
     return str(doc)
 
 
