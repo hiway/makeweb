@@ -66,4 +66,91 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
     });
+
+    const notificationsBtn = document.getElementById('notifications');
+    const notificationsList = document.createElement('div');
+    notificationsList.className = 'notifications-list hidden';
+    sidebar.appendChild(notificationsList);
+
+    function getNotifications() {
+        return JSON.parse(localStorage.getItem('notifications') || '[]');
+    }
+
+    function saveNotifications(notifications) {
+        localStorage.setItem('notifications', JSON.stringify(notifications));
+    }
+
+    const severityIcons = {
+        info: 'info',
+        success: 'check_circle',
+        warning: 'warning',
+        error: 'error'
+    };
+
+    function getIconHtml(name) {
+        return `<img src="${notificationsBtn.querySelector('img').src.replace('notifications', name)}" alt="${name}">`;
+    }
+
+    function renderNotifications() {
+        const notifications = getNotifications();
+        notificationsList.innerHTML = notifications.length
+            ? `
+                <button class="clear-all">Clear All</button>
+                ${notifications.map(n => `
+                    <div class="notification ${n.severity}" data-id="${n.id}">
+                        <div class="notification-header">
+                            <div class="notification-title">
+                                <span class="severity-icon">${getIconHtml(severityIcons[n.severity])}</span>
+                                <span class="title">${n.title}</span>
+                            </div>
+                            <button class="dismiss" title="Dismiss">${getIconHtml('close')}</button>
+                        </div>
+                        <div class="message">${n.message}</div>
+                        <div class="timestamp">
+                            ${getIconHtml('schedule')}
+                            ${new Date(n.timestamp).toLocaleString()}
+                        </div>
+                    </div>
+                `).join('')}`
+            : `
+                <div class="empty-notifications">
+                    ${getIconHtml('notifications')}
+                    <p>No notifications</p>
+                </div>
+            `;
+    }
+
+    function addNotification(notification) {
+        const notifications = getNotifications();
+        notifications.unshift(notification);
+        saveNotifications(notifications);
+        renderNotifications();
+    }
+
+    notificationsList.addEventListener('click', (e) => {
+        const dismissBtn = e.target.closest('.dismiss');
+        if (dismissBtn) {
+            const id = dismissBtn.closest('.notification').dataset.id;
+            const notifications = getNotifications().filter(n => n.id !== id);
+            saveNotifications(notifications);
+            renderNotifications();
+        } else if (e.target.classList.contains('clear-all')) {
+            saveNotifications([]);
+            renderNotifications();
+        }
+    });
+
+    notificationsBtn.addEventListener('click', () => {
+        notificationsList.classList.toggle('hidden');
+    });
+
+    // Initialize SSE connection
+    const eventSource = new EventSource('/notifications/stream');
+    eventSource.addEventListener('notification', (e) => {
+        const notification = JSON.parse(e.data);
+        addNotification(notification);
+    });
+
+    // Initial render
+    renderNotifications();
 });

@@ -13,9 +13,15 @@ icons=(
     "menu"             # For mobile menu toggle
     "settings"         # For preferences button
     "night_sight_auto" # For auto night mode
-    "dark_mode"        # For theme toggle (initial state)
-    "light_mode"       # For theme toggle (dark mode state)
+    "dark_mode"        # For theme toggle (dark mode state)
+    "light_mode"       # For theme toggle (light mode state)
     "notifications"    # For notifications button
+    "info"             # For info notifications
+    "check_circle"     # For success notifications
+    "warning"          # For warning notifications
+    "error"            # For error notifications
+    "schedule"         # For timestamp
+    "close"            # For dismiss button
 )
 
 # Define icon renaming map

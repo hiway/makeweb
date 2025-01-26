@@ -7,6 +7,18 @@
     --sidebar-bg: #f5f5f5;
     --text-color: #333333;
     --border-color: #dddddd;
+
+    --info-bg: #e3f2fd;
+    --success-bg: #e8f5e9;
+    --warning-bg: #fff3e0;
+    --error-bg: #ffebee;
+    --info-color: #0d47a1;
+    --success-color: #1b5e20;
+    --warning-color: #e65100;
+    --error-color: #b71c1c;
+
+    --notification-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    --notification-hover-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 :root.dark {
@@ -15,6 +27,15 @@
     --sidebar-bg: #2d2d2d;
     --text-color: #ffffff;
     --border-color: #404040;
+
+    --info-bg: #1a237e;
+    --success-bg: #1b5e20;
+    --warning-bg: #e65100;
+    --error-bg: #b71c1c;
+    --info-color: #e3f2fd;
+    --success-color: #e8f5e9;
+    --warning-color: #fff3e0;
+    --error-color: #ffebee;
 }
 
 body {
@@ -133,4 +154,178 @@ body {
     #menu-toggle {
         display: none;
     }
+}
+
+.notifications-list {
+    position: absolute;
+    bottom: var(--toolbar-height);
+    left: 0;
+    right: 0;
+    background: var(--bg-color);
+    border-top: 1px solid var(--border-color);
+    max-height: 60vh;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.notifications-list.hidden {
+    display: none;
+}
+
+.notification {
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+    box-shadow: var(--notification-shadow);
+    border: 1px solid transparent;
+}
+
+.notification:hover {
+    box-shadow: var(--notification-hover-shadow);
+    transform: translateY(-1px);
+}
+
+.notification.info {
+    background: var(--info-bg);
+    color: var(--info-color);
+    border-color: rgba(13, 71, 161, 0.1);
+}
+
+.notification.success {
+    background: var(--success-bg);
+    color: var(--success-color);
+    border-color: rgba(27, 94, 32, 0.1);
+}
+
+.notification.warning {
+    background: var(--warning-bg);
+    color: var(--warning-color);
+    border-color: rgba(230, 81, 0, 0.1);
+}
+
+.notification.error {
+    background: var(--error-bg);
+    color: var(--error-color);
+    border-color: rgba(183, 28, 28, 0.1);
+}
+
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+}
+
+.notification-title {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.notification .title {
+    font-weight: 600;
+    letter-spacing: 0.01em;
+}
+
+.notification .message {
+    margin-bottom: 0.75rem;
+    line-height: 1.4;
+}
+
+.notification .timestamp {
+    font-size: 0.8rem;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.notification .timestamp .material-symbols-outlined {
+    font-size: 0.9rem;
+}
+
+.notification .severity-icon {
+    font-size: 1.2rem;
+}
+
+.notification .dismiss {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    opacity: 0.7;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+}
+
+.notification .dismiss:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.clear-all {
+    background: var(--bg-color);
+    border: 1px solid var(--border-color);
+    padding: 0.75rem;
+    border-radius: 6px;
+    margin-bottom: 1rem;
+    cursor: pointer;
+    width: 100%;
+    color: var(--text-color);
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.clear-all:hover {
+    background: rgba(0, 0, 0, 0.05);
+}
+
+.empty-notifications {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem 2rem;
+    color: var(--text-color);
+    opacity: 0.5;
+}
+
+.empty-notifications .material-symbols-outlined {
+    font-size: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.empty-notifications p {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+.notification .severity-icon img,
+.notification .dismiss img,
+.notification .timestamp img,
+.empty-notifications img {
+    width: 20px;
+    height: 20px;
+    opacity: 0.8;
+}
+
+.empty-notifications img {
+    width: 48px;
+    height: 48px;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+}
+
+.notification .timestamp img {
+    width: 16px;
+    height: 16px;
 }
