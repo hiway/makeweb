@@ -17,6 +17,7 @@ from makeweb.html import (
     li,
     div,
     meta,
+    link,
 )
 
 META = {
@@ -26,63 +27,106 @@ META = {
 app = Quart(__name__)
 css = CSS()
 js = JS()
-clients = set()  # Chat clients
+clients = set()
 
 css(
     "*,body",
     margin="0",
     padding="0",
-    font_family="roboto,verdana,sans-serif",
-    font_size="12pt",
-)
-css("html, body", height="100%")
-css(
-    "input",
+    font_family=(
+        "-apple-system, BlinkMacSystemFont, 'Segoe UI', "
+        "Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', "
+        "'Helvetica Neue', sans-serif"
+    ),
+    font_size="14px",
     box_sizing="border-box",
-    _moz_box_sizing="border-box",
-    _webkit_box_sizing="border-box",
+    color="#2c3e50",
 )
+
+css("html, body", height="100%", background_color="#f5f6fa")
+
 css(
     ".page",
-    display="grid",
-    grid_template_columns="auto 3em",
-    grid_auto_rows="minmax(10px, auto)",
-    grid_gap="6px",
-    position="relative",
-    top="0",
-    left="0",
-    margin="0.5em",
-    margin_bottom="1em",
+    display="flex",
+    flex_direction="column",
+    height="100vh",
+    max_width="800px",
+    margin="0 auto",
+    background_color="white",
+    box_shadow="0 0 20px rgba(0,0,0,0.05)",
 )
+
+css(
+    ".incoming_wrapper",
+    flex_grow="1",
+    overflow_y="auto",
+    padding="1rem",
+    scroll_behavior="smooth",
+)
+
 css(
     "#chat_log",
-    grid_column="1 / 3",
-    grid_row="1",
-    width="100%",
-    max_height="100%",
-    max_width="100%",
-    overflow="auto",
+    list_style="none",
+    padding="0",
+    margin="0",
 )
+
 css(
     "#chat_log li",
-    list_style="none",
-    font_size="12pt",
-    margin_left="1em",
-    margin_right="1em",
+    background_color="#f1f2f6",
+    padding="0.8rem 1rem",
+    border_radius="1rem",
+    margin_bottom="0.5rem",
+    max_width="80%",
+    word_wrap="break-word",
+    animation="fadeIn 0.3s ease-in",
 )
+
+css(
+    ".input_area",
+    display="flex",
+    padding="1rem",
+    gap="0.5rem",
+    background_color="white",
+    border_top="1px solid #eee",
+)
+
 css(
     "#txt_message",
-    grid_row="2",
-    grid_column="1",
-    width="100%",
-    padding_left="0.8em",
-    padding_right="0.2em",
+    flex_grow="1",
+    padding="0.8rem 1rem",
+    border="1px solid #e1e1e1",
+    border_radius="1.5rem",
+    outline="none",
+    transition="border-color 0.2s ease",
 )
+
+css(
+    "#txt_message:focus",
+    border_color="#3498db",
+)
+
 css(
     "#btn_send",
-    grid_row="2",
-    grid_column="2",
-    font_size="1.2em",
+    background_color="#3498db",
+    color="white",
+    border="none",
+    border_radius="1.5rem",
+    width="3rem",
+    height="3rem",
+    cursor="pointer",
+    transition="background-color 0.2s ease",
+)
+
+css(
+    "#btn_send:hover",
+    background_color="#2980b9",
+)
+
+css(
+    "@keyframes fadeIn",
+    _from={"opacity": "0", "transform": "translateY(10px)"},
+    _to={"opacity": "1", "transform": "translateY(0)"},
 )
 
 
@@ -121,17 +165,26 @@ async def index():
     with head():
         meta(name="charset", content="utf-8")
         [meta(name=k, content=v) for k, v in META.items()]
-        title("Anon?Chat")
+        meta(
+            name="description",
+            content="A minimal real-time chat application",
+        )
+        title("Chat")
         with style():
             css.embed()
     with body():
         with div(cls="page"):
             with div(cls="incoming_wrapper"):
-                with ul(id="chat_log"):
-                    [li("&nbsp;") for x in range(50)]
+                ul(id="chat_log")
                 div("", id="bottom")
-            _input(id="txt_message", onkeyup="send_message(event)", autofocus=True)
-            button("⏎", onclick="send_message(event)", id="btn_send")
+            with div(cls="input_area"):
+                _input(
+                    id="txt_message",
+                    onkeyup="send_message(event)",
+                    placeholder="Type a message...",
+                    autofocus=True,
+                )
+                button("→", onclick="send_message(event)", id="btn_send")
         with script():
             js.embed()
     return Response(str(doc))
