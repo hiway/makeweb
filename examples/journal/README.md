@@ -10,6 +10,11 @@ A graph-based journaling system that allows creating and linking blocks of conte
 - Retrieve blocks and their relationships
 - Delete blocks and their links
 - Custom block IDs support
+- Rich graph generation with visualization
+- Block metadata features
+- Advanced search capabilities
+- Block references and backlinks
+- SVG graph visualization
 
 ## API Reference
 
@@ -143,6 +148,15 @@ metadata = await journal.get_metadata(block_id)
 backlinks = await journal.get_backlinks(block_id)
 for link in backlinks:
     print(f"Referenced in: {link['content']} (context: {link['context']})")
+```
+
+### Graph Visualization
+
+```python
+# Generate SVG graph of the journal
+svg = await journal.generate_svg()
+with open("journal_graph.svg", "w") as f:
+    f.write(svg)
 ```
 
 ## Data Structure
