@@ -27,6 +27,11 @@
     --success-icon-filter: invert(23%) sepia(97%) saturate(1965%) hue-rotate(112deg) brightness(92%) contrast(101%);
     --warning-icon-filter: invert(48%) sepia(58%) saturate(5161%) hue-rotate(360deg) brightness(103%) contrast(97%);
     --error-icon-filter: invert(12%) sepia(89%) saturate(5018%) hue-rotate(345deg) brightness(90%) contrast(115%);
+
+    --notification-header-bg: rgba(0, 0, 0, 0.04);
+    --notification-header-border: rgba(0, 0, 0, 0.05);
+    --notification-header-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    --timestamp-color: #666666;
 }
 
 :root.dark {
@@ -52,6 +57,11 @@
     --success-icon-filter: invert(94%) sepia(24%) saturate(1266%) hue-rotate(65deg) brightness(93%) contrast(96%);
     --warning-icon-filter: invert(85%) sepia(28%) saturate(838%) hue-rotate(323deg) brightness(103%) contrast(101%);
     --error-icon-filter: invert(83%) sepia(35%) saturate(436%) hue-rotate(314deg) brightness(108%) contrast(96%);
+
+    --notification-header-bg: rgba(255, 255, 255, 0.05);
+    --notification-header-border: rgba(255, 255, 255, 0.05);
+    --notification-header-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --timestamp-color: #999999;
 }
 
 body {
@@ -220,11 +230,11 @@ body {
 .notifications-content {
     flex: 1;
     overflow-y: auto;
-    padding: 1rem;
+    padding: 0.75rem;
 }
 
 .clear-button-container {
-    padding: 0.5rem;
+    padding: 0.35rem;
     background: var(--bg-color);
 }
 
@@ -233,13 +243,20 @@ body {
 }
 
 .notification {
-    margin-bottom: 1rem;
-    padding: 1rem;
-    border-radius: 8px;
-    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    padding: 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
     transition: all 0.2s ease;
     box-shadow: var(--notification-shadow);
     border: 1px solid transparent;
+    background: var(--bg-color);
+    position: relative;
+    padding-bottom: 2rem;
+}
+
+.notification:last-child {
+    margin-bottom: 0;
 }
 
 .notification:hover {
@@ -275,15 +292,19 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 0.75rem;
-    min-height: 24px;
-    /* Match icon height */
+    margin: -0.75rem -0.75rem 0.5rem -0.75rem;
+    min-height: 20px;
+    padding: 0.5rem 0.75rem;
+    background: var(--notification-header-bg);
+    border-bottom: 1px solid var(--notification-header-border);
+    border-radius: 7px 7px 0 0;
+    box-shadow: var(--notification-header-shadow);
 }
 
 .notification-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.35rem;
     flex: 1;
 }
 
@@ -296,15 +317,15 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
-    margin-left: 0.5rem;
+    width: 20px;
+    height: 20px;
+    margin-left: 0.35rem;
 }
 
 .notification-title {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 0.35rem;
 }
 
 .notification .title {
@@ -314,15 +335,18 @@ body {
 
 .notification .message {
     margin-bottom: 0.75rem;
-    line-height: 1.4;
+    line-height: 1.35;
 }
 
 .notification .timestamp {
-    font-size: 0.8rem;
-    opacity: 0.7;
+    position: absolute;
+    bottom: 0.5rem;
+    right: 0.75rem;
+    font-size: 0.75rem;
+    color: var(--timestamp-color);
     display: flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.2rem;
 }
 
 .notification .timestamp .material-symbols-outlined {
@@ -345,8 +369,8 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
 }
 
 .notification .dismiss:hover {
@@ -357,7 +381,7 @@ body {
 .clear-all {
     background: var(--bg-color);
     border: 1px solid var(--border-color);
-    padding: 0.5rem;
+    padding: 0.35rem;
     border-radius: 6px;
     margin-bottom: 0;
     cursor: pointer;
@@ -365,7 +389,7 @@ body {
     color: var(--text-color);
     font-weight: 500;
     transition: all 0.2s ease;
-    font-size: 0.9rem;
+    font-size: 0.85rem;
 }
 
 .clear-all:hover {
@@ -397,8 +421,8 @@ body {
 .notification .dismiss img,
 .notification .timestamp img,
 .empty-notifications img {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
     opacity: 0.8;
     filter: var(--icon-filter);
 }
@@ -412,8 +436,8 @@ body {
 }
 
 .notification .timestamp img {
-    width: 16px;
-    height: 16px;
+    width: 14px;
+    height: 14px;
 }
 
 .notification .severity-icon img {
