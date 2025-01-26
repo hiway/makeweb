@@ -49,6 +49,7 @@
 #
 
 from flask import Flask, Response
+from datetime import datetime
 
 # Import Doc, CSS, JS along with the tags.
 from makeweb import (
@@ -66,6 +67,7 @@ from makeweb.html import (
     a,
     span,
     i,
+    meta,  # Add meta to imports
 )
 from makeweb.javascript import TimezZ
 
@@ -74,51 +76,154 @@ app = Flask(__name__)
 css = CSS()
 js = JS()
 
-# Let us define some style for our page and clock.
-#
-# If you know css, this should look familiar.
-# Note that we use double-underscore where a hyphen is expected,
-# since python does not allow hyphens in identifiers.
-#
-# Internals: MakeWeb's css support works with python's __call__() feature.
-
+# Update CSS styles for modern design
+css(
+    ":root",
+    **{
+        "--bg-primary": "#0f172a",
+        "--text-primary": "#f8fafc",
+        "--accent": "#3b82f6",
+        "--glass-bg": "rgba(255, 255, 255, 0.03)",
+        "--spacing-base": "1rem",
+        "--font-size-base": "16px",
+    }
+)
 
 css(
     "body",
-    background_color="#102719",
-    color="#93ff45",
-    font_family="roboto-mono,monospace",
+    background_color="var(--bg-primary)",
+    color="var(--text-primary)",
+    font_family=(
+        "ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "
+        "'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif"
+    ),
     text_align="center",
-    background="repeating-linear-gradient(0deg,#102719,\
-    #100019 3px,\
-    #0f1009 3px,\
-    #0a2019 3px,\
-    #0f1f09 3px,\
-    #102719 10px);",
-    background_size="100% 50px",
+    background="linear-gradient(145deg, var(--accent) 0%, var(--bg-primary) 100%)",
+    min_height="100vh",
+    display="flex",
+    align_items="center",
+    justify_content="center",
+    margin="0",
+    padding="var(--spacing-base)",
+    font_size="var(--font-size-base)",
+)
+
+css(
+    ".container",
+    display="flex",
+    flex_direction="column",
+    align_items="center",
+    gap="var(--spacing-base)",
+    width="100%",
+    max_width="400px",
+    margin="0 auto",
+    padding="var(--spacing-base)",
 )
 
 css(
     ".timer",
+    background_color="var(--glass-bg)",
+    # Reduce blur on mobile for better performance
+    backdrop_filter="blur(8px)",
+    border_radius="16px",
+    padding="1.5rem 1rem",
+    box_shadow="0 4px 16px rgba(0, 0, 0, 0.1)",
+    border="1px solid rgba(255, 255, 255, 0.05)",
     width="100%",
-    font_size="3.4em",
-    margin_top="3em",
-    _webkit_filter="blur(0.6px)",
-    filter="blur(0.6px)",
+    max_width="400px",
 )
 
-css(".timer span i", color="#93aa22")
+css(
+    ".timer span",
+    display="inline-flex",
+    flex_direction="column",
+    align_items="center",
+    margin="0 0.5rem",
+    font_size="2rem",  # Base size for mobile
+    font_weight="700",
+    text_shadow="0 1px 4px rgba(0, 0, 0, 0.2)",
+)
+
+css(
+    ".timer span i",
+    font_size="0.8rem",
+    font_weight="500",
+    color="var(--text-primary)",
+    opacity="0.8",
+    font_style="normal",
+    margin_top="0.25rem",
+    text_transform="uppercase",
+    letter_spacing="0.05em",
+)
 
 css(
     ".legend-wrap",
-    width="100%",
-    margin_top="1em",
-    _webkit_filter="blur(0.2px)",
-    filter="blur(0.2px)",
+    margin_top="1.5rem",
+    padding="0 1rem",
 )
 
-css("a", color="#93cc45", font_size="1.3em", text_decoration="none")
+css(
+    ".description",
+    width="100%",
+    padding="1rem",
+    background_color="var(--glass-bg)",
+    backdrop_filter="blur(8px)",
+    border_radius="16px",
+    border="1px solid rgba(255, 255, 255, 0.05)",
+    margin_top="1rem",
+)
 
+css(
+    "a",
+    color="var(--text-primary)",
+    font_size="1rem",
+    text_decoration="none",
+    transition="all 0.3s ease",
+    display="block",  # Better touch target
+    touch_action="manipulation",  # Better mobile handling
+    width="100%",
+    text_align="center",
+)
+
+# Media queries for larger screens
+css(
+    "@media (min-width: 640px)",
+    **{
+        ":root": {"--font-size-base": "18px"},
+        ".timer": {
+            "padding": "2rem",
+            "border-radius": "24px",
+            "max-width": "600px",
+        },
+        ".timer span": {"font-size": "3rem", "margin": "0 1rem"},
+        ".timer span i": {"font-size": "1rem", "margin-top": "0.5rem"},
+        "a": {"padding": "0.75rem 2rem"},
+        ".container": {
+            "max-width": "600px",
+            "gap": "2rem",
+        },
+    }
+)
+
+css(
+    "@media (min-width: 1024px)",
+    **{
+        ":root": {"--font-size-base": "20px"},
+        ".timer": {
+            "padding": "3rem 2rem",
+            "backdrop-filter": "blur(12px)",  # Increased blur on desktop
+        },
+        ".timer span": {"font-size": "4rem"},
+        ".legend-wrap": {"margin-top": "2rem"},
+    }
+)
+
+# Add animation keyframes
+css(
+    "@keyframes pulse",
+    _from={"transform": "scale(1)"},
+    _to={"transform": "scale(1.03)"},
+)
 
 # We are going to cheat a little and use an existing library
 # for the countdown timer.
@@ -161,6 +266,20 @@ def render_initial_timer(days, hours, minutes, seconds):
     return str(doc)
 
 
+def calculate_initial_timer() -> tuple[str, str, str, str]:
+    """Calculate the initial timer values without relying on JS."""
+    target = datetime(2038, 1, 19, 3, 14, 7)
+    now = datetime.now()
+    diff = target - now
+
+    days = str(diff.days).zfill(4)
+    hours = str((diff.seconds // 3600) % 24).zfill(2)
+    minutes = str((diff.seconds // 60) % 60).zfill(2)
+    seconds = str(diff.seconds % 60).zfill(2)
+
+    return days, hours, minutes, seconds
+
+
 # Finally, we define a single route handler for '/'.
 # In the handler, we create a doc, embed css and js in appropriate places,
 # and include the external js library.
@@ -171,26 +290,28 @@ def render_initial_timer(days, hours, minutes, seconds):
 def index():
     doc = Doc("html")
     with head():
-        title("Year 2038 problem")
+        meta(charset="utf-8")
+        meta(name="viewport", content="width=device-width, initial-scale=1.0")
+        meta(name="description", content="Countdown to the Unix Timestamp Apocalypse")
+        meta(name="theme-color", content="#0f172a")
+        title("Year 2038 | Unix Timestamp Apocalypse")
+        # Remove Google Fonts link
         with style():
             css.embed()
     with body(onload="start_timer()"):
-        # Exercise: calculate these numbers in advance, in Python,
-        # and fill them in, letting the page be useful
-        # even if a user has disabled JS
-        # (with adtech giving us many good reasons to do so!).
-        # As a rule, even in 2018, do not assume JS is available by default.
-        div(
-            render_initial_timer(days="0000", hours="00", minutes="00", seconds="00"),
-            cls="timer j-timer",
-        )
-        div(
-            a(
-                "to January 19, 2038 03:14:07",
-                href="https://en.wikipedia.org/wiki/Year_2038_problem",
-            ),
-            cls="legend-wrap",
-        )
+        days, hours, minutes, seconds = calculate_initial_timer()
+        with div(cls="container"):
+            div(
+                render_initial_timer(
+                    days=days, hours=hours, minutes=minutes, seconds=seconds
+                ),
+                cls="timer j-timer",
+            )
+            with div(cls="description"):
+                a(
+                    "to January 19, 2038 03:14:07",
+                    href="https://en.wikipedia.org/wiki/Year_2038_problem",
+                )
         script(src="/static/timezz.js")
         with script():  # You can comment out this block
             js.embed()  # to test render_initial_timer()
