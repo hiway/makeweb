@@ -19,6 +19,14 @@
 
     --notification-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     --notification-hover-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    --icon-filter: brightness(0) saturate(100%);
+    /* Make icons black */
+
+    /* Filter values for severity icons */
+    --info-icon-filter: invert(19%) sepia(92%) saturate(2285%) hue-rotate(212deg) brightness(91%) contrast(106%);
+    --success-icon-filter: invert(23%) sepia(97%) saturate(1965%) hue-rotate(112deg) brightness(92%) contrast(101%);
+    --warning-icon-filter: invert(48%) sepia(58%) saturate(5161%) hue-rotate(360deg) brightness(103%) contrast(97%);
+    --error-icon-filter: invert(12%) sepia(89%) saturate(5018%) hue-rotate(345deg) brightness(90%) contrast(115%);
 }
 
 :root.dark {
@@ -28,14 +36,22 @@
     --text-color: #ffffff;
     --border-color: #404040;
 
-    --info-bg: #1a237e;
-    --success-bg: #1b5e20;
-    --warning-bg: #e65100;
-    --error-bg: #b71c1c;
-    --info-color: #e3f2fd;
-    --success-color: #e8f5e9;
-    --warning-color: #fff3e0;
-    --error-color: #ffebee;
+    --info-bg: rgba(30, 64, 175, 0.15);
+    --success-bg: rgba(21, 128, 61, 0.15);
+    --warning-bg: rgba(234, 88, 12, 0.15);
+    --error-bg: rgba(220, 38, 38, 0.15);
+    --info-color: #93c5fd;
+    --success-color: #86efac;
+    --warning-color: #fdba74;
+    --error-color: #fca5a5;
+    --icon-filter: brightness(0) saturate(100%) invert(1);
+    /* Make icons white */
+
+    /* Filter values for severity icons in dark mode */
+    --info-icon-filter: invert(69%) sepia(13%) saturate(2753%) hue-rotate(190deg) brightness(102%) contrast(96%);
+    --success-icon-filter: invert(94%) sepia(24%) saturate(1266%) hue-rotate(65deg) brightness(93%) contrast(96%);
+    --warning-icon-filter: invert(85%) sepia(28%) saturate(838%) hue-rotate(323deg) brightness(103%) contrast(101%);
+    --error-icon-filter: invert(83%) sepia(35%) saturate(436%) hue-rotate(314deg) brightness(108%) contrast(96%);
 }
 
 body {
@@ -119,6 +135,7 @@ body {
 .toolbar button img {
     width: 24px;
     opacity: 0.7;
+    filter: var(--icon-filter);
 }
 
 .notification-indicator {
@@ -162,6 +179,7 @@ body {
 
 #menu-toggle img {
     width: 24px;
+    filter: var(--icon-filter);
 }
 
 .today-date {
@@ -382,6 +400,7 @@ body {
     width: 20px;
     height: 20px;
     opacity: 0.8;
+    filter: var(--icon-filter);
 }
 
 .empty-notifications img {
@@ -389,9 +408,31 @@ body {
     height: 48px;
     margin-bottom: 1rem;
     opacity: 0.7;
+    filter: var(--icon-filter);
 }
 
 .notification .timestamp img {
     width: 16px;
     height: 16px;
+}
+
+.notification .severity-icon img {
+    opacity: 1;
+    filter: none;
+}
+
+.notification.info .severity-icon img {
+    filter: var(--info-icon-filter);
+}
+
+.notification.success .severity-icon img {
+    filter: var(--success-icon-filter);
+}
+
+.notification.warning .severity-icon img {
+    filter: var(--warning-icon-filter);
+}
+
+.notification.error .severity-icon img {
+    filter: var(--error-icon-filter);
 }
