@@ -113,11 +113,38 @@ body {
     border: none;
     cursor: pointer;
     padding: 0.5rem;
+    position: relative;
 }
 
 .toolbar button img {
     width: 24px;
     opacity: 0.7;
+}
+
+.notification-indicator {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    border: 1px solid var(--bg-color);
+}
+
+.notification-indicator.error {
+    background-color: #ef4444;
+}
+
+.notification-indicator.warning {
+    background-color: #f97316;
+}
+
+.notification-indicator.success {
+    background-color: #22c55e;
+}
+
+.notification-indicator.info {
+    background-color: #3b82f6;
 }
 
 .content {

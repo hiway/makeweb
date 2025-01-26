@@ -120,11 +120,48 @@ document.addEventListener('DOMContentLoaded', () => {
             `;
     }
 
+    const severityPriority = {
+        error: 3,
+        warning: 2,
+        success: 1,
+        info: 0
+    };
+
+    function getHighestSeverity(notifications) {
+        if (!notifications.length) return 'none';
+        return notifications.reduce((highest, n) => {
+            return severityPriority[n.severity] > severityPriority[highest] ? n.severity : highest;
+        }, 'info');
+    }
+
+    function updateNotificationIcon() {
+        const notifications = getNotifications();
+        const severity = getHighestSeverity(notifications);
+        const icon = notificationsBtn.querySelector('img');
+
+        // Remove existing indicator if any
+        const existingIndicator = notificationsBtn.querySelector('.notification-indicator');
+        if (existingIndicator) {
+            existingIndicator.remove();
+        }
+
+        // Add new indicator if there are notifications
+        if (severity !== 'none') {
+            const indicator = document.createElement('div');
+            indicator.className = `notification-indicator ${severity}`;
+            notificationsBtn.appendChild(indicator);
+        }
+
+        // Reset any existing icon styles
+        icon.style = '';
+    }
+
     function addNotification(notification) {
         const notifications = getNotifications();
         notifications.unshift(notification);
         saveNotifications(notifications);
         renderNotifications();
+        updateNotificationIcon();
     }
 
     notificationsList.addEventListener('click', (e) => {
@@ -134,9 +171,11 @@ document.addEventListener('DOMContentLoaded', () => {
             const notifications = getNotifications().filter(n => n.id !== id);
             saveNotifications(notifications);
             renderNotifications();
+            updateNotificationIcon();
         } else if (e.target.classList.contains('clear-all')) {
             saveNotifications([]);
             renderNotifications();
+            updateNotificationIcon();
         }
     });
 
@@ -153,4 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initial render
     renderNotifications();
+
+    // Initial icon update
+    updateNotificationIcon();
 });
