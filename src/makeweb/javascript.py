@@ -36,7 +36,7 @@ class JS(object):
             [
                 l
                 for l in source.splitlines()[skip_lines:]
-                if not any(l.strip().startswith(b) for b in ["from mkwebpage", "@"])
+                if not any(l.strip().startswith(b) for b in ["from makeweb", "@"])
             ]
         )
         js_code = _python_to_javascript(source)[0]
