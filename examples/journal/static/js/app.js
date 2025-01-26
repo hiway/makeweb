@@ -22,6 +22,19 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 300);
     });
 
+    function getEffectiveTheme() {
+        return prefersDark.matches ? 'dark' : 'light';
+    }
+
+    function getNextTheme(currentTheme) {
+        const effectiveTheme = getEffectiveTheme();
+        const darkCycle = ['auto', 'light', 'dark'];
+        const lightCycle = ['auto', 'dark', 'light'];
+        const cycle = effectiveTheme === 'dark' ? darkCycle : lightCycle;
+
+        return cycle[(cycle.indexOf(currentTheme) + 1) % cycle.length];
+    }
+
     function updateThemeIcon(theme) {
         const iconBase = themeIcon.src.substring(0, themeIcon.src.lastIndexOf('/') + 1);
         themeIcon.src = `${iconBase}${theme}_mode.svg`;
@@ -45,14 +58,14 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
-    // Initialize theme icon
-    updateThemeIcon(localStorage.getItem('theme') || 'auto');
+    // Initialize theme
+    const storedTheme = localStorage.getItem('theme') || 'auto';
+    setTheme(storedTheme);
 
     // Theme toggle click handler
     themeToggle.addEventListener('click', () => {
         const currentTheme = document.documentElement.getAttribute('data-theme');
-        const themes = ['auto', 'light', 'dark'];
-        const nextTheme = themes[(themes.indexOf(currentTheme) + 1) % themes.length];
+        const nextTheme = getNextTheme(currentTheme);
         setTheme(nextTheme);
     });
 
