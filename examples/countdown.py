@@ -80,6 +80,7 @@ js = JS()
 css(
     ":root",
     **{
+        "box_sizing": "border-box",
         "--bg-primary": "#0f172a",
         "--text-primary": "#f8fafc",
         "--accent": "#3b82f6",
@@ -158,8 +159,8 @@ css(
 
 css(
     ".legend-wrap",
-    margin_top="1.5rem",
-    padding="0 1rem",
+    # margin_top="1.5rem",
+    # padding="0 1rem",
 )
 
 css(
@@ -225,6 +226,64 @@ css(
     _to={"transform": "scale(1.03)"},
 )
 
+# Update bit visualization CSS to fix mobile centering
+css(
+    ".bit-viz",
+    width="100%",
+    padding="1.5rem 1rem",
+    background_color="var(--glass-bg)",
+    backdrop_filter="blur(8px)",
+    border_radius="16px",
+    border="1px solid rgba(255, 255, 255, 0.05)",
+    margin_top="1rem",
+    font_family="monospace",
+    display="flex",
+    flex_direction="column",
+    gap="1rem",
+    align_items="center",  # Center bytes vertically
+)
+
+css(
+    ".byte-group",
+    display="flex",
+    gap="2px",
+    padding="0.25rem",
+    justify_content="center",  # Center bits within byte group
+    width="100%",  # Take full width to allow centering
+)
+
+# Remove .bits-row since we don't need it anymore
+# Update bit sizes for better mobile display
+css(
+    ".bit",
+    width="18px",
+    height="18px",
+    display="inline-flex",
+    align_items="center",
+    justify_content="center",
+    border_radius="3px",
+    font_size="0.75rem",
+    font_weight="bold",
+    background_color="rgba(255, 255, 255, 0.05)",
+    transition="all 0.3s ease",  # Smooth transition for all changes
+)
+
+# Add media query for larger screens
+css(
+    "@media (min-width: 640px)",
+    **{
+        ".bit-viz": {
+            "flex-direction": "row",
+            "justify-content": "center",
+        },
+        ".bit": {
+            "width": "20px",  # Slightly larger on desktop
+            "height": "20px",
+            "font-size": "0.8rem",
+        },
+    }
+)
+
 # We are going to cheat a little and use an existing library
 # for the countdown timer.
 # However, the function defined below is translated to javascript
@@ -248,6 +307,29 @@ def start_timer():
             "template": "<span>NUMBER<i>LETTER</i></span> ",
         },
     )
+
+
+# Add JavaScript functions to handle binary clock updates
+@js.function
+def update_binary_clock():
+    timestamp = int(Date.now() / 1000)  # Current Unix timestamp
+    binary = timestamp.toString(2).padStart(32, "0")
+    bits = document.querySelectorAll(".bit")
+
+    for i in range(len(bits)):
+        bit = bits[i]
+        if binary[i] == "1":
+            bit.classList.add("active")
+        else:
+            bit.classList.remove("active")
+
+
+@js.script
+def start_binary_clock():
+    # Initial update
+    update_binary_clock()
+    # Update every second
+    setInterval(update_binary_clock, 1000)
 
 
 # Render the initial timer widget as TimezZ does once it is initialized.
@@ -280,6 +362,26 @@ def calculate_initial_timer() -> tuple[str, str, str, str]:
     return days, hours, minutes, seconds
 
 
+# Update bit visualization helper function
+def render_binary_visualization(doc, timestamp: int) -> str:
+    """Convert timestamp to binary and create visualization."""
+    binary = format(timestamp, "032b")  # 32-bit binary representation
+
+    with div(cls="bit-viz"):
+        # Group bits into bytes (8 bits each)
+        for byte_index in range(4):
+            start = byte_index * 8
+            end = start + 8
+            byte_bits = binary[start:end]
+
+            with div(cls="byte-group"):
+                for bit in byte_bits:
+                    bit_class = "bit active" if bit == "1" else "bit"
+                    div(bit, cls=bit_class)
+
+    return str(doc)
+
+
 # Finally, we define a single route handler for '/'.
 # In the handler, we create a doc, embed css and js in appropriate places,
 # and include the external js library.
@@ -298,8 +400,9 @@ def index():
         # Remove Google Fonts link
         with style():
             css.embed()
-    with body(onload="start_timer()"):
+    with body(onload="start_timer(); start_binary_clock()"):  # Add binary clock start
         days, hours, minutes, seconds = calculate_initial_timer()
+        current_timestamp = int(datetime.now().timestamp())
         with div(cls="container"):
             div(
                 render_initial_timer(
@@ -307,6 +410,8 @@ def index():
                 ),
                 cls="timer j-timer",
             )
+            # Add binary visualization
+            render_binary_visualization(doc, current_timestamp)
             with div(cls="description"):
                 a(
                     "to January 19, 2038 03:14:07",
