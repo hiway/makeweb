@@ -109,6 +109,42 @@ success = await journal.set_block_order(parent_id, [child1_id, child2_id, child3
 success = await journal.delete_block(block_id)
 ```
 
+### Block Updates and Search
+
+```python
+# Update block content
+await journal.edit_block(block_id, "Updated content")
+
+# Change block type
+await journal.change_block_type(block_id, "todo")
+
+# Search blocks
+results = await journal.search_blocks("search query")
+```
+
+### Metadata and Tags
+
+```python
+# Set metadata
+await journal.set_metadata(block_id, "status", "draft")
+await journal.set_metadata(block_id, "tags", "important,todo")
+
+# Get specific metadata
+status = await journal.get_metadata(block_id, "status")
+
+# Get all metadata
+metadata = await journal.get_metadata(block_id)
+```
+
+### Backlinks
+
+```python
+# Get all blocks that reference this block
+backlinks = await journal.get_backlinks(block_id)
+for link in backlinks:
+    print(f"Referenced in: {link['content']} (context: {link['context']})")
+```
+
 ## Data Structure
 
 ### Blocks Table

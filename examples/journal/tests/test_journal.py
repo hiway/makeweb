@@ -258,3 +258,67 @@ async def test_complex_tree_operations(journal):
     assert len(ancestors) == 2
     assert ancestors[0]["id"] == root_id
     assert ancestors[1]["id"] == child2_id
+
+
+async def test_edit_block(journal):
+    """Test editing a block's content."""
+    block_id = await journal.create_block("Original content", "note")
+
+    # Edit the block
+    success = await journal.edit_block(block_id, "Updated content")
+    assert success is True
+
+    # Verify the update
+    block = await journal.get_block(block_id)
+    assert block["content"] == "Updated content"
+
+
+async def test_block_metadata(journal):
+    """Test setting and getting block metadata."""
+    block_id = await journal.create_block("Test block", "note")
+
+    # Set metadata
+    await journal.set_metadata(block_id, "status", "draft")
+    await journal.set_metadata(block_id, "tags", "test,demo")
+
+    # Get specific metadata
+    status = await journal.get_metadata(block_id, "status")
+    assert status == {"status": "draft"}
+
+    # Get all metadata
+    metadata = await journal.get_metadata(block_id)
+    assert metadata == {"status": "draft", "tags": "test,demo"}
+
+
+async def test_search_blocks(journal):
+    """Test full-text search functionality."""
+    # Create test blocks
+    await journal.create_block("Apple pie recipe", "note")
+    await journal.create_block("Banana bread recipe", "note")
+    await journal.create_block("Shopping list", "todo")
+
+    # Search for recipes
+    results = await journal.search_blocks("recipe")
+    assert len(results) == 2
+    assert all("recipe" in block["content"] for block in results)
+
+
+async def test_backlinks(journal):
+    """Test backlinks functionality."""
+    # Create target block first
+    target_id = await journal.create_block("Target block", "note")
+
+    # Create blocks that reference the target
+    source1_id = await journal.create_block(f"Reference to [[Target block]]", "note")
+    source2_id = await journal.create_block(
+        f"Another [[Target block]] reference", "note"
+    )
+
+    # Get backlinks
+    backlinks = await journal.get_backlinks(target_id)
+    assert len(backlinks) == 2
+    assert all(b["id"] in [source1_id, source2_id] for b in backlinks)
+
+    # Test reference context
+    contexts = [b["context"] for b in backlinks]
+    assert "Target block" in contexts

@@ -59,25 +59,211 @@ class Journal:
             )
         """
         )
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS metadata (
+                block_id TEXT,
+                key TEXT,
+                value TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (block_id, key),
+                FOREIGN KEY (block_id) REFERENCES blocks(id) ON DELETE CASCADE
+            )
+        """
+        )
+
+        await self.db.execute(
+            """
+            CREATE TABLE IF NOT EXISTS block_references (
+                source_id TEXT,
+                target_id TEXT,
+                context TEXT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (source_id, target_id, context),
+                FOREIGN KEY (source_id) REFERENCES blocks(id) ON DELETE CASCADE,
+                FOREIGN KEY (target_id) REFERENCES blocks(id) ON DELETE CASCADE
+            )
+        """
+        )
+
+        await self.db.execute(
+            """
+            CREATE VIRTUAL TABLE IF NOT EXISTS blocks_fts USING fts5(
+                id UNINDEXED,
+                content,
+                type UNINDEXED
+            )
+        """
+        )
+        await self.db.commit()
+
+    async def _extract_references(self, content: str) -> List[str]:
+        """Extract reference IDs from content using [[reference]] syntax."""
+        import re
+
+        pattern = r"\[\[(.*?)\]\]"
+        return re.findall(pattern, content)
+
+    async def _update_references(self, block_id: str, content: str) -> None:
+        """Update references for a block based on its content."""
+        # First, remove old references
+        async with self.db.execute(
+            "DELETE FROM block_references WHERE source_id = ?", (block_id,)
+        ):
+            await self.db.commit()
+
+        # Extract and create new references
+        refs = await self._extract_references(content)
+        for ref in refs:
+            # Find target blocks that match the reference
+            async with self.db.execute(
+                "SELECT id FROM blocks WHERE content LIKE ?", (f"%{ref}%",)
+            ) as cursor:
+                targets = await cursor.fetchall()
+                for target in targets:
+                    await self.db.execute(
+                        """
+                        INSERT INTO block_references (source_id, target_id, context)
+                        VALUES (?, ?, ?)
+                        """,
+                        (block_id, target[0], ref),
+                    )
         await self.db.commit()
 
     async def create_block(
         self, content: str, block_type: str, block_id: Optional[str] = None
     ) -> str:
-        """Create a new block with optional ID (auto-generated if not provided)."""
+        """Create a new block with optional ID and process any references."""
         block_id = block_id or self.generate_id()
         try:
-            async with aiosqlite.connect(self.db_path) as db:
-                await db.execute(
-                    "INSERT INTO blocks (id, content, type) VALUES (?, ?, ?)",
-                    (block_id, content, block_type),
-                )
-                await db.commit()
-                return block_id
+            await self.db.execute(
+                "INSERT INTO blocks (id, content, type) VALUES (?, ?, ?)",
+                (block_id, content, block_type),
+            )
+            await self.db.commit()
+
+            # Process references in content
+            await self._update_references(block_id, content)
+
+            # Update FTS index
+            await self.db.execute(
+                "INSERT INTO blocks_fts(id, content, type) VALUES (?, ?, ?)",
+                (block_id, content, block_type),
+            )
+            await self.db.commit()
+            return block_id
         except aiosqlite.IntegrityError:
             if block_id:  # If provided ID conflicts, generate a new one
                 return await self.create_block(content, block_type)
             raise
+
+    async def edit_block(self, block_id: str, content: str) -> bool:
+        """Update a block's content and update references and search index."""
+        async with self.db.execute(
+            """
+            UPDATE blocks 
+            SET content = ?, updated_at = CURRENT_TIMESTAMP 
+            WHERE id = ?
+            """,
+            (content, block_id),
+        ):
+            # Update references
+            await self._update_references(block_id, content)
+
+            # Update FTS index
+            await self.db.execute(
+                "INSERT INTO blocks_fts(id, content, type) SELECT id, content, type FROM blocks WHERE id = ?",
+                (block_id,),
+            )
+            await self.db.commit()
+            return True
+
+    async def change_block_type(self, block_id: str, new_type: str) -> bool:
+        """Change a block's type."""
+        async with self.db.execute(
+            "UPDATE blocks SET type = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+            (new_type, block_id),
+        ):
+            await self.db.commit()
+            return True
+
+    async def set_metadata(self, block_id: str, key: str, value: str) -> bool:
+        """Set metadata key-value pair for a block."""
+        async with self.db.execute(
+            """
+            INSERT OR REPLACE INTO metadata (block_id, key, value)
+            VALUES (?, ?, ?)
+            """,
+            (block_id, key, value),
+        ):
+            await self.db.commit()
+            return True
+
+    async def get_metadata(
+        self, block_id: str, key: Optional[str] = None
+    ) -> Dict[str, str]:
+        """Get all metadata or specific key for a block."""
+        if key:
+            async with self.db.execute(
+                "SELECT key, value FROM metadata WHERE block_id = ? AND key = ?",
+                (block_id, key),
+            ) as cursor:
+                row = await cursor.fetchone()
+                return {row[0]: row[1]} if row else {}
+        else:
+            async with self.db.execute(
+                "SELECT key, value FROM metadata WHERE block_id = ?",
+                (block_id,),
+            ) as cursor:
+                return {row[0]: row[1] async for row in cursor}
+
+    async def search_blocks(self, query: str) -> List[Dict[str, Any]]:
+        """Search blocks using full-text search."""
+        blocks = []
+        async with self.db.execute(
+            """
+            SELECT b.* FROM blocks b
+            JOIN blocks_fts f ON b.id = f.id
+            WHERE blocks_fts MATCH ?
+            ORDER BY rank
+            """,
+            (query,),
+        ) as cursor:
+            async for row in cursor:
+                blocks.append(
+                    {
+                        "id": row[0],
+                        "content": row[1],
+                        "type": row[2],
+                        "created_at": row[3],
+                        "updated_at": row[4],
+                    }
+                )
+        return blocks
+
+    async def get_backlinks(self, block_id: str) -> List[Dict[str, Any]]:
+        """Get all blocks that reference this block."""
+        backlinks = []
+        async with self.db.execute(
+            """
+            SELECT b.*, r.context FROM blocks b
+            JOIN block_references r ON b.id = r.source_id
+            WHERE r.target_id = ?
+            """,
+            (block_id,),
+        ) as cursor:
+            async for row in cursor:
+                backlinks.append(
+                    {
+                        "id": row[0],
+                        "content": row[1],
+                        "type": row[2],
+                        "created_at": row[3],
+                        "updated_at": row[4],
+                        "context": row[5],
+                    }
+                )
+        return backlinks
 
     async def would_create_cycle(
         self, start_id: str, end_id: str, visited=None
