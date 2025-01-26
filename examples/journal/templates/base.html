@@ -31,9 +31,15 @@
 
 <body>
     <div class="layout initial">
-        <button id="menu-toggle">
-            {{ svg('menu') }}
-        </button>
+        <header class="top-toolbar">
+            <button id="menu-toggle">
+                {{ svg('menu') }}
+            </button>
+            <h1>Journal</h1>
+            <button id="more-options">
+                {{ svg('more_vert') }}
+            </button>
+        </header>
         <aside class="sidebar">
             <div class="search-container">
                 <input type="text" id="search" placeholder="Search...">

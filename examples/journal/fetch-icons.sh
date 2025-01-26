@@ -22,6 +22,7 @@ icons=(
     "error"            # For error notifications
     "schedule"         # For timestamp
     "close"            # For dismiss button
+    "more_vert"        # For more options button
 )
 
 # Define icon renaming map

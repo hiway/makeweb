@@ -36,6 +36,7 @@
     /* Typography */
     --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
         Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+    --top-toolbar-height: 56px;
 }
 
 :root.dark {
@@ -87,7 +88,7 @@ body {
 .sidebar {
     position: fixed;
     left: 0;
-    top: 0;
+    top: var(--top-toolbar-height);
     bottom: 0;
     width: var(--sidebar-width);
     background: var(--sidebar-bg);
@@ -106,22 +107,26 @@ body {
 .search-container {
     padding: 1rem;
     position: relative;
-    margin-left: 3.5rem;
-    /* Make room for menu button */
+    /* Remove margin-left since we don't need to make room for menu button anymore */
 }
 
 .search-container input {
     width: 100%;
-    padding: 0.5rem 2rem 0.5rem 0.5rem;
+    padding: 0.5rem 2.5rem 0.5rem 0.75rem;
+    /* Adjust padding for better text alignment */
     border: 1px solid var(--border-color);
-    border-radius: 4px;
+    border-radius: 6px;
+    /* Slightly larger radius */
     background: var(--bg-color);
     color: var(--text-color);
+    font-size: 0.95rem;
+    /* Slightly larger font */
 }
 
-.search-container img {
+.search-container .icon {
     position: absolute;
-    right: 1.5rem;
+    right: 1.25rem;
+    /* Adjust position to match new padding */
     top: 50%;
     transform: translateY(-50%);
     width: 20px;
@@ -197,13 +202,11 @@ body {
     flex: 1;
     margin-left: 0;
     padding: 1rem;
+    margin-top: var(--top-toolbar-height);
 }
 
 #menu-toggle {
-    position: fixed;
-    left: 1rem;
-    top: 1rem;
-    z-index: 100;
+    position: static;
     background: none;
     border: none;
     padding: 0.5rem;
@@ -266,6 +269,16 @@ body {
     /* Move menu button with sidebar */
     .sidebar.visible~.content #menu-toggle {
         transform: translateX(var(--sidebar-width));
+    }
+
+    /* Move toolbar with sidebar */
+    .sidebar.visible~.top-toolbar {
+        left: var(--sidebar-width);
+    }
+
+    .top-toolbar {
+        left: 0;
+        transition: left 0.3s ease;
     }
 }
 
@@ -497,7 +510,8 @@ body {
 /* Search container icon */
 .search-container .icon {
     position: absolute;
-    right: 1.5rem;
+    right: 1.25rem;
+    /* Adjust position to match new padding */
     top: 50%;
     transform: translateY(-50%);
     width: 20px;
@@ -876,4 +890,42 @@ body {
 
 .preferences-button.primary:hover {
     background: #2563eb;
+}
+
+/* Top toolbar styles */
+.top-toolbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--top-toolbar-height);
+    background: var(--bg-color);
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    justify-content: space-between;
+    z-index: 1000;
+}
+
+.top-toolbar h1 {
+    font-size: 1.25rem;
+    font-weight: 500;
+    color: var(--text-color);
+    margin: 0;
+}
+
+.top-toolbar button {
+    background: none;
+    border: none;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.top-toolbar button:hover {
+    background-color: rgba(127, 127, 127, 0.1);
 }
