@@ -119,20 +119,47 @@ css(
     display="flex",
     flex_direction="column",
     min_height="100vh",
-    max_width="800px",
-    margin="0 auto",
+    # Remove max-width
     background_color="white",
-    box_shadow="0 0 20px rgba(0,0,0,0.05)",
+    box_shadow="none",  # Remove shadow since it's full width
+)
+
+# Add new container class for content
+css(
+    ".container",
+    width="100%",
+    max_width="1200px",  # Wider content area
+    margin="0 auto",
+    padding="0 2rem",  # Add horizontal padding
 )
 
 css(
     "nav",
-    padding="1rem",
+    padding="1rem 0",  # Remove horizontal padding (will be handled by container)
     background_color="white",
     border_bottom="1px solid #eee",
-    display="flex",  # Add flex display
-    justify_content="space-between",  # Space between nav items and search
-    align_items="center",  # Center items vertically
+    display="flex",
+    justify_content="space_between",
+    align_items="center",
+)
+
+css(
+    "nav .container",
+    display="flex",
+    justify_content="space-between",
+    align_items="center",
+    width="100%",
+)
+
+css(
+    ".nav-left",
+    display="flex",
+    align_items="center",
+)
+
+css(
+    ".nav-right",
+    margin_left="auto",  # This ensures the search stays on the right
 )
 
 css(
@@ -181,7 +208,7 @@ css(
 css(
     "#content-wrap",
     flex_grow="1",
-    padding="2rem",
+    padding="2rem 0",  # Remove horizontal padding (will be handled by container)
     animation="fadeIn 0.3s ease-in",
 )
 
@@ -389,8 +416,9 @@ def render_base(topic, content, create, count, results=False, query=""):
     with body():
         with div(cls="page"):
             render_nav(doc, query)  # Pass query to render_nav
-            with div(id="content-wrap"):
-                render_content(doc, topic, content, create, results)
+            with div(cls="container"):  # Add container
+                with div(id="content-wrap"):
+                    render_content(doc, topic, content, create, results)
             render_footer(doc, count)
     return str(doc)
 
@@ -401,9 +429,14 @@ def render_base(topic, content, create, count, results=False, query=""):
 
 def render_nav(doc, query=""):  # Add query parameter
     with nav():
-        [li(a(k, href=v), cls="navli") for k, v in NAV.items()]
-        with form(action="/search", method="post"):
-            _input(type="text", name="query", value=query, placeholder="Search...")
+        with div(cls="container"):  # Add container
+            with div(cls="nav-left"):
+                [li(a(k, href=v), cls="navli") for k, v in NAV.items()]
+            with div(cls="nav-right"):
+                with form(action="/search", method="post"):
+                    _input(
+                        type="text", name="query", value=query, placeholder="Search..."
+                    )
 
 
 def render_content(doc, topic, content, create, results):
