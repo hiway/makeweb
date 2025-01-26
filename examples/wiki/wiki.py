@@ -91,7 +91,6 @@ TOPIC = "home"
 # Also define the navigation urls we want to display.
 NAV = {
     "Home": "/",
-    "Search": "/search",
 }
 
 SEARCH_FRAGMENT_LENGTH = 250
@@ -131,6 +130,9 @@ css(
     padding="1rem",
     background_color="white",
     border_bottom="1px solid #eee",
+    display="flex",  # Add flex display
+    justify_content="space-between",  # Space between nav items and search
+    align_items="center",  # Center items vertically
 )
 
 css(
@@ -143,6 +145,37 @@ css(
     "nav a",
     color="#3498db",
     text_decoration="none",
+)
+
+css(
+    "nav form",
+    display="inline-block",
+    margin_left="auto",  # This pushes the form to the right
+)
+
+css(
+    "nav input[type='text']",
+    padding="0.5rem",
+    border="1px solid #e1e1e1",
+    border_radius="0.5rem",
+    font_size="0.9rem",
+    width="200px",
+)
+
+css(
+    "nav button",
+    padding="0.5rem 1rem",
+    background_color="#3498db",
+    color="white",
+    border="none",
+    border_radius="0.5rem",
+    margin_left="0.5rem",
+    cursor="pointer",
+)
+
+css(
+    "nav button:hover",
+    background_color="#2980b9",
 )
 
 css(
@@ -344,7 +377,7 @@ def delete_topic(topic):
 # For our tiny wiki, a single page is sufficient.
 
 
-def render_base(topic, content, create, count, results=False):
+def render_base(topic, content, create, count, results=False, query=""):
     doc = Doc("html")
     with head():
         meta(charset="utf-8")
@@ -355,7 +388,7 @@ def render_base(topic, content, create, count, results=False):
             css.embed()
     with body():
         with div(cls="page"):
-            render_nav(doc)
+            render_nav(doc, query)  # Pass query to render_nav
             with div(id="content-wrap"):
                 render_content(doc, topic, content, create, results)
             render_footer(doc, count)
@@ -366,9 +399,11 @@ def render_base(topic, content, create, count, results=False):
 # Let us define the three render_... functions required by render_base().
 
 
-def render_nav(doc):
+def render_nav(doc, query=""):  # Add query parameter
     with nav():
         [li(a(k, href=v), cls="navli") for k, v in NAV.items()]
+        with form(action="/search", method="post"):
+            _input(type="text", name="query", value=query, placeholder="Search...")
 
 
 def render_content(doc, topic, content, create, results):
@@ -419,7 +454,6 @@ def render_content_form(topic, content):
 
 def render_search_results(query, results):
     doc = Doc()
-    h3(render_search_form(query))
     with ul(id="search-results"):
         for topic, content in results.items():
             with li():
@@ -512,7 +546,9 @@ def search_post():
     content = render_search_results(query, results)
     create = False
     count = count_topics()
-    return Response(render_base(topic, content, create, count, results=True))
+    return Response(
+        render_base(topic, content, create, count, results=True, query=query)
+    )
 
 
 @app.route("/search/<query>")
@@ -522,7 +558,9 @@ def search_manual(query):
     content = render_search_results(query, results)
     create = False
     count = count_topics()
-    return Response(render_base(topic, content, create, count, results=True))
+    return Response(
+        render_base(topic, content, create, count, results=True, query=query)
+    )
 
 
 # Configure Flask's static route handler for css.
