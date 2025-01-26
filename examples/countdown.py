@@ -48,7 +48,7 @@
 # Watch this!
 #
 
-from flask import Flask, Response
+from quart import Quart, Response  # Replace Flask import
 from datetime import datetime
 
 # Import Doc, CSS, JS along with the tags.
@@ -71,8 +71,8 @@ from makeweb.html import (
 )
 from makeweb.javascript import TimezZ
 
-# Initialize app, css and js.
-app = Flask(__name__)
+# Initialize app with Quart instead of Flask
+app = Quart(__name__)
 css = CSS()
 js = JS()
 
@@ -389,7 +389,7 @@ def render_binary_visualization(doc, timestamp: int) -> str:
 
 
 @app.route("/")
-def index():
+async def index():
     doc = Doc("html")
     with head():
         meta(charset="utf-8")
@@ -436,4 +436,4 @@ def index():
 
 # Let's get this started!
 
-app.run(debug=True, use_reloader=True)
+app.run(debug=True, use_reloader=True, port=5000)
