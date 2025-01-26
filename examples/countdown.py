@@ -48,8 +48,10 @@
 # Watch this!
 #
 
-from quart import Quart, Response  # Replace Flask import
+from quart import Quart, Response
 from datetime import datetime
+import asyncio
+import json
 
 # Import Doc, CSS, JS along with the tags.
 from makeweb import (
@@ -69,7 +71,7 @@ from makeweb.html import (
     i,
     meta,  # Add meta to imports
 )
-from makeweb.javascript import TimezZ
+from makeweb.javascript import TimezZ, EventSource, document, console, JSON
 
 # Initialize app with Quart instead of Flask
 app = Quart(__name__)
@@ -80,14 +82,19 @@ js = JS()
 css(
     ":root",
     **{
-        "box_sizing": "border-box",
         "--bg-primary": "#0f172a",
         "--text-primary": "#f8fafc",
         "--accent": "#3b82f6",
         "--glass-bg": "rgba(255, 255, 255, 0.03)",
         "--spacing-base": "1rem",
         "--font-size-base": "16px",
-    }
+    },
+)
+css(
+    "*",
+    **{
+        "box-sizing": "border-box",
+    },
 )
 
 css(
@@ -124,7 +131,6 @@ css(
 css(
     ".timer",
     background_color="var(--glass-bg)",
-    # Reduce blur on mobile for better performance
     backdrop_filter="blur(8px)",
     border_radius="16px",
     padding="1.5rem 1rem",
@@ -158,19 +164,12 @@ css(
 )
 
 css(
-    ".legend-wrap",
-    # margin_top="1.5rem",
-    # padding="0 1rem",
-)
-
-css(
     ".description",
     width="100%",
     padding="1rem",
     background_color="var(--glass-bg)",
     backdrop_filter="blur(8px)",
     border_radius="16px",
-    border="1px solid rgba(255, 255, 255, 0.05)",
     margin_top="1rem",
 )
 
@@ -180,108 +179,136 @@ css(
     font_size="1rem",
     text_decoration="none",
     transition="all 0.3s ease",
-    display="block",  # Better touch target
-    touch_action="manipulation",  # Better mobile handling
+    display="block",
+    touch_action="manipulation",
     width="100%",
     text_align="center",
 )
+# Update bit visualization CSS to fix mobile centering
+css(
+    ".bit-viz",
+    width="100%",
+    max_width="900px",  # Add max-width to match container
+    padding="1.5rem 1rem",
+    # background_color="var(--glass-bg)",
+    backdrop_filter="blur(8px)",
+    border_radius="16px",
+    # border="1px solid rgba(255, 255, 255, 0.05)",
+    margin_top="1rem",
+    font_family="monospace",
+    display="flex",
+    flex_direction="column",
+    gap="0.5rem",  # Reduce gap between bytes
+    align_items="center",
+)
 
-# Media queries for larger screens
+css(
+    ".byte-group",
+    display="flex",
+    gap="1px",  # Reduce gap between bits
+    padding="0.25rem",
+    justify_content="center",
+    width="auto",  # Change from 100% to auto
+)
+
+css(
+    ".bit",
+    width="16px",  # Make bits slightly smaller
+    height="16px",
+    display="inline-flex",
+    align_items="center",
+    justify_content="center",
+    border_radius="3px",
+    font_size="0.7rem",  # Slightly smaller font
+    font_weight="bold",
+    background_color="rgba(255, 255, 255, 0.05)",
+    transition="all 0.3s ease",
+    color="rgba(255, 255, 255, 0.5)",
+)
+
+# Add CSS for active bits after existing .bit CSS
+css(
+    ".bit.active",
+    background_color="var(--accent)",
+    color="var(--text-primary)",  # Make active digits fully visible
+    box_shadow="0 0 8px var(--accent)",
+)
+
+
+# Fix keyframes syntax
+css(
+    "@keyframes pulse",
+    **{"from": {"transform": "scale(1)"}, "to": {"transform": "scale(1.03)"}},
+)
+
 css(
     "@media (min-width: 640px)",
     **{
         ":root": {"--font-size-base": "18px"},
+        ".container": {
+            "max-width": "800px",
+            "gap": "2rem",
+            "padding": "2rem",
+        },
         ".timer": {
             "padding": "2rem",
             "border-radius": "24px",
             "max-width": "600px",
         },
-        ".timer span": {"font-size": "3rem", "margin": "0 1rem"},
-        ".timer span i": {"font-size": "1rem", "margin-top": "0.5rem"},
-        "a": {"padding": "0.75rem 2rem"},
-        ".container": {
-            "max-width": "600px",
-            "gap": "2rem",
+        ".timer span": {
+            "font-size": "3rem",
+            "margin": "0 1rem",
         },
-    }
+        ".timer span i": {
+            "font-size": "1rem",
+            "margin-top": "0.5rem",
+        },
+        ".bit-viz": {
+            "flex-direction": "row",
+            "justify-content": "center",
+            "gap": "1rem",
+            "padding": "2rem",
+        },
+        ".bit": {
+            "width": "20px",
+            "height": "20px",
+            "font-size": "0.8rem",
+        },
+        ".description": {
+            "max-width": "600px",
+            "padding": "1.5rem",
+        },
+        "a": {"padding": "0.75rem 2rem"},
+    },
 )
 
 css(
     "@media (min-width: 1024px)",
     **{
         ":root": {"--font-size-base": "20px"},
+        ".container": {
+            "max-width": "1000px",
+            "gap": "3rem",
+            "padding": "3rem",
+        },
         ".timer": {
             "padding": "3rem 2rem",
-            "backdrop-filter": "blur(12px)",  # Increased blur on desktop
+            "backdrop-filter": "blur(12px)",
         },
-        ".timer span": {"font-size": "4rem"},
-        ".legend-wrap": {"margin-top": "2rem"},
-    }
-)
-
-# Add animation keyframes
-css(
-    "@keyframes pulse",
-    _from={"transform": "scale(1)"},
-    _to={"transform": "scale(1.03)"},
-)
-
-# Update bit visualization CSS to fix mobile centering
-css(
-    ".bit-viz",
-    width="100%",
-    padding="1.5rem 1rem",
-    background_color="var(--glass-bg)",
-    backdrop_filter="blur(8px)",
-    border_radius="16px",
-    border="1px solid rgba(255, 255, 255, 0.05)",
-    margin_top="1rem",
-    font_family="monospace",
-    display="flex",
-    flex_direction="column",
-    gap="1rem",
-    align_items="center",  # Center bytes vertically
-)
-
-css(
-    ".byte-group",
-    display="flex",
-    gap="2px",
-    padding="0.25rem",
-    justify_content="center",  # Center bits within byte group
-    width="100%",  # Take full width to allow centering
-)
-
-# Remove .bits-row since we don't need it anymore
-# Update bit sizes for better mobile display
-css(
-    ".bit",
-    width="18px",
-    height="18px",
-    display="inline-flex",
-    align_items="center",
-    justify_content="center",
-    border_radius="3px",
-    font_size="0.75rem",
-    font_weight="bold",
-    background_color="rgba(255, 255, 255, 0.05)",
-    transition="all 0.3s ease",  # Smooth transition for all changes
-)
-
-# Add media query for larger screens
-css(
-    "@media (min-width: 640px)",
-    **{
+        ".timer span": {
+            "font-size": "4rem",
+        },
         ".bit-viz": {
-            "flex-direction": "row",
-            "justify-content": "center",
+            "padding": "2.5rem",
+            "gap": "1.5rem",
         },
         ".bit": {
-            "width": "20px",  # Slightly larger on desktop
-            "height": "20px",
-            "font-size": "0.8rem",
+            "width": "24px",
+            "height": "24px",
+            "font-size": "0.9rem",
+            "border-radius": "4px",
         },
-    }
+    },
 )
 
 # We are going to cheat a little and use an existing library
@@ -309,27 +336,28 @@ def start_timer():
     )
 
 
-# Add JavaScript functions to handle binary clock updates
+# Add new JavaScript function to handle SSE updates
 @js.function
-def update_binary_clock():
-    timestamp = int(Date.now() / 1000)  # Current Unix timestamp
-    binary = timestamp.toString(2).padStart(32, "0")
-    bits = document.querySelectorAll(".bit")
+def handle_binary_updates():
+    source = EventSource("/binary-updates")
 
-    for i in range(len(bits)):
-        bit = bits[i]
-        if binary[i] == "1":
-            bit.classList.add("active")
-        else:
-            bit.classList.remove("active")
+    def update_display(event):
+        try:
+            data = JSON.parse(event.data)
+            bits = document.querySelectorAll(".bit")
+            binary = data["binary"]  # Use dictionary access syntax
+            for i in range(len(bits)):
+                bit = bits[i]
+                bit.textContent = binary[i]  # Update the text content
+                if binary[i] == "1":
+                    bit.classList.add("active")
+                else:
+                    bit.classList.remove("active")
+        except Exception as e:
+            console.error("Error updating binary display:", e)
 
-
-@js.script
-def start_binary_clock():
-    # Initial update
-    update_binary_clock()
-    # Update every second
-    setInterval(update_binary_clock, 1000)
+    source.onmessage = update_display
+    source.onerror = lambda e: console.error("SSE error:", e)
 
 
 # Render the initial timer widget as TimezZ does once it is initialized.
@@ -400,7 +428,9 @@ async def index():
         # Remove Google Fonts link
         with style():
             css.embed()
-    with body(onload="start_timer(); start_binary_clock()"):  # Add binary clock start
+    with body(
+        onload="start_timer(); handle_binary_updates()"
+    ):  # Add binary clock start
         days, hours, minutes, seconds = calculate_initial_timer()
         current_timestamp = int(datetime.now().timestamp())
         with div(cls="container"):
@@ -421,6 +451,27 @@ async def index():
         with script():  # You can comment out this block
             js.embed()  # to test render_initial_timer()
     return Response(str(doc))
+
+
+# Add SSE endpoint with proper Quart streaming response
+@app.route("/binary-updates")
+async def binary_updates():
+    async def stream_updates():
+        while True:
+            timestamp = int(datetime.now().timestamp())
+            binary = format(timestamp, "032b")
+            data = json.dumps({"binary": binary})
+            yield f"data: {data}\n\n"
+            await asyncio.sleep(1)
+
+    return Response(
+        stream_updates(),
+        mimetype="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+        },
+    )
 
 
 # Alright, we can now run this app and watch time ticking by to clock-doom!

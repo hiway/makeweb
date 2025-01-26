@@ -10,8 +10,21 @@ class CSS(object):
         return "".join(self.style)
 
     def __call__(self, _target, **attrs):
-        attrs = ["{}:{}".format(fix_attribute(_a), _v) for _a, _v in attrs.items()]
-        style = "%s{%s}" % (_target, ";".join(attrs))
+        # Special handling for @keyframes and @media queries
+        if _target.startswith("@keyframes") or _target.startswith("@media"):
+            rules = []
+            for selector, properties in attrs.items():
+                if isinstance(properties, dict):
+                    formatted_props = [
+                        f"{fix_attribute(k)}:{v}" for k, v in properties.items()
+                    ]
+                    rules.append(f"{selector}{{{';'.join(formatted_props)}}}")
+            style = f"{_target}{{{';'.join(rules)}}}"
+        else:
+            # Regular CSS rules
+            attrs = [f"{fix_attribute(k)}:{v}" for k, v in attrs.items()]
+            style = f"{_target}{{{';'.join(attrs)}}}"
+
         self.style.append(style)
 
     def embed(self):
