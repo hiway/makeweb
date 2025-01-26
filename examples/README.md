@@ -12,7 +12,7 @@ Same as `hello.py`, but with comments.
 
 A countdown timer demonstrating CSS and JS generation along with HTML.
 
-## `wiki.py`
+## `wiki/wiki.py`
 
 Prefer a more realistic, well-commented example? Check this one out!
 
