@@ -201,3 +201,80 @@ class Journal:
 
         # Create new block and link to the same parent
         return await self.create_child_block(parent_id, content, block_type, block_id)
+
+    async def get_parent(self, block_id: str) -> Optional[Dict[str, Any]]:
+        """Get the parent block of the given block."""
+        async with self.db.execute(
+            """
+            SELECT b.* FROM blocks b
+            JOIN links l ON b.id = l.source_id
+            WHERE l.target_id = ?
+            """,
+            (block_id,),
+        ) as cursor:
+            row = await cursor.fetchone()
+            if row:
+                return {
+                    "id": row[0],
+                    "content": row[1],
+                    "type": row[2],
+                    "created_at": row[3],
+                    "updated_at": row[4],
+                }
+            return None
+
+    async def get_siblings(self, block_id: str) -> List[Dict[str, Any]]:
+        """Get all blocks that share the same parent."""
+        parent = await self.get_parent(block_id)
+        if not parent:
+            return []
+        siblings = await self.get_children(parent["id"])
+        return [block for block in siblings if block["id"] != block_id]
+
+    async def get_ancestors(self, block_id: str) -> List[Dict[str, Any]]:
+        """Get all ancestors of a block in order from root to immediate parent."""
+        ancestors = []
+        current_id = block_id
+
+        while True:
+            parent = await self.get_parent(current_id)
+            if not parent:
+                break
+            ancestors.insert(0, parent)  # Add to start to maintain root->leaf order
+            current_id = parent["id"]
+
+        return ancestors
+
+    async def move_block(
+        self, block_id: str, new_parent_id: str, position: int = -1
+    ) -> bool:
+        """Move a block to a new parent at the specified position."""
+        # Check for cycles
+        if await self.would_create_cycle(block_id, new_parent_id):
+            return False
+
+        async with self.db.execute(
+            "DELETE FROM links WHERE target_id = ?", (block_id,)
+        ):
+            await self.db.commit()
+
+        success = await self.link_blocks(new_parent_id, block_id)
+        if success and position >= 0:
+            # Implementation for position-based ordering would go here
+            # This would require adding an 'order' column to the links table
+            pass
+
+        return success
+
+    async def set_block_order(self, parent_id: str, child_ids: List[str]) -> bool:
+        """Set the order of children for a given parent."""
+        # Verify all blocks exist and are children of parent
+        current_children = await self.get_children(parent_id)
+        current_child_ids = {child["id"] for child in current_children}
+
+        if not all(cid in current_child_ids for cid in child_ids):
+            return False
+
+        # Implementation for ordering would go here
+        # This would require adding an 'order' column to the links table
+        return True

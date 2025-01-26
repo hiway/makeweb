@@ -158,3 +158,103 @@ async def test_create_sibling_without_parent(journal):
     # Attempt to create sibling
     sibling_id = await journal.create_sibling_block(orphan_id, "Sibling", "note")
     assert sibling_id is None
+
+
+async def test_get_parent(journal):
+    """Test retrieving a block's parent."""
+    parent_id = await journal.create_block("Parent", "note")
+    child_id = await journal.create_child_block(parent_id, "Child", "note")
+
+    parent = await journal.get_parent(child_id)
+    assert parent is not None
+    assert parent["id"] == parent_id
+    assert parent["content"] == "Parent"
+
+    # Test with root block (no parent)
+    root_parent = await journal.get_parent(parent_id)
+    assert root_parent is None
+
+
+async def test_get_siblings(journal):
+    """Test retrieving a block's siblings."""
+    parent_id = await journal.create_block("Parent", "note")
+    child1_id = await journal.create_child_block(parent_id, "Child 1", "note")
+    child2_id = await journal.create_child_block(parent_id, "Child 2", "note")
+    child3_id = await journal.create_child_block(parent_id, "Child 3", "note")
+
+    # Get siblings of child2
+    siblings = await journal.get_siblings(child2_id)
+    assert len(siblings) == 2
+    sibling_ids = {s["id"] for s in siblings}
+    assert child1_id in sibling_ids
+    assert child3_id in sibling_ids
+    assert child2_id not in sibling_ids
+
+    # Test with root block (no siblings)
+    root_siblings = await journal.get_siblings(parent_id)
+    assert len(root_siblings) == 0
+
+
+async def test_get_ancestors(journal):
+    """Test retrieving a block's ancestors."""
+    # Create a chain: root -> parent -> child -> grandchild
+    root_id = await journal.create_block("Root", "note")
+    parent_id = await journal.create_child_block(root_id, "Parent", "note")
+    child_id = await journal.create_child_block(parent_id, "Child", "note")
+    grandchild_id = await journal.create_child_block(child_id, "Grandchild", "note")
+
+    # Get ancestors of grandchild
+    ancestors = await journal.get_ancestors(grandchild_id)
+    assert len(ancestors) == 3
+    assert ancestors[0]["id"] == root_id  # First ancestor should be root
+    assert ancestors[1]["id"] == parent_id
+    assert ancestors[2]["id"] == child_id
+
+    # Test with root block (no ancestors)
+    root_ancestors = await journal.get_ancestors(root_id)
+    assert len(root_ancestors) == 0
+
+
+async def test_move_block(journal):
+    """Test moving a block to a new parent."""
+    # Create initial structure
+    root1_id = await journal.create_block("Root 1", "note")
+    root2_id = await journal.create_block("Root 2", "note")
+    child_id = await journal.create_child_block(root1_id, "Child", "note")
+
+    # Move child from root1 to root2
+    success = await journal.move_block(child_id, root2_id)
+    assert success is True
+
+    # Verify child was moved
+    assert len(await journal.get_children(root1_id)) == 0
+    children = await journal.get_children(root2_id)
+    assert len(children) == 1
+    assert children[0]["id"] == child_id
+
+    # Test cycle prevention
+    child2_id = await journal.create_child_block(child_id, "Child 2", "note")
+    success = await journal.move_block(root2_id, child2_id)
+    assert success is False
+
+
+async def test_complex_tree_operations(journal):
+    """Test a complex sequence of tree operations."""
+    # Create initial structure
+    root_id = await journal.create_block("Root", "note")
+    child1_id = await journal.create_child_block(root_id, "Child 1", "note")
+    child2_id = await journal.create_child_block(root_id, "Child 2", "note")
+    grandchild_id = await journal.create_child_block(child1_id, "Grandchild", "note")
+
+    # Move grandchild to be child of child2
+    await journal.move_block(grandchild_id, child2_id)
+
+    # Verify new structure
+    assert len(await journal.get_children(child1_id)) == 0
+    assert len(await journal.get_children(child2_id)) == 1
+
+    # Verify ancestors
+    ancestors = await journal.get_ancestors(grandchild_id)
+    assert len(ancestors) == 2
+    assert ancestors[0]["id"] == root_id
+    assert ancestors[1]["id"] == child2_id

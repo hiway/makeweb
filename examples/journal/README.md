@@ -76,6 +76,32 @@ children = await journal.get_children(block_id)
 # Returns: List of block dictionaries
 ```
 
+### Tree Navigation
+
+```python
+# Get parent of a block
+parent = await journal.get_parent(block_id)
+
+# Get siblings of a block
+siblings = await journal.get_siblings(block_id)
+
+# Get ancestors (from root to immediate parent)
+ancestors = await journal.get_ancestors(block_id)
+```
+
+### Tree Manipulation
+
+```python
+# Move a block to a new parent
+success = await journal.move_block(block_id, new_parent_id)
+
+# Move a block to a specific position under new parent
+success = await journal.move_block(block_id, new_parent_id, position=2)
+
+# Set specific order of children under a parent
+success = await journal.set_block_order(parent_id, [child1_id, child2_id, child3_id])
+```
+
 ### Deleting Blocks
 
 ```python
@@ -141,6 +167,27 @@ sibling_id = await journal.create_sibling_block(child1_id, "Sibling to first chi
 
 # Clean up
 await journal.disconnect()
+```
+
+## Example: Complex Tree Operations
+
+```python
+# Create a hierarchical structure
+root_id = await journal.create_block("Root", "note")
+section1_id = await journal.create_child_block(root_id, "Section 1", "note")
+section2_id = await journal.create_child_block(root_id, "Section 2", "note")
+subsection_id = await journal.create_child_block(section1_id, "Subsection", "note")
+
+# Move subsection from section1 to section2
+await journal.move_block(subsection_id, section2_id)
+
+# Get the complete path to a block
+ancestors = await journal.get_ancestors(subsection_id)
+path = " > ".join(block["content"] for block in ancestors)
+# Result: "Root > Section 2"
+
+# Get siblings of a block
+siblings = await journal.get_siblings(subsection_id)
 ```
 
 ## Development
