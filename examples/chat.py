@@ -69,6 +69,8 @@ css(
     list_style="none",
     padding="0",
     margin="0",
+    display="flex",
+    flex_direction="column",
 )
 
 css(
@@ -77,9 +79,25 @@ css(
     padding="0.8rem 1rem",
     border_radius="1rem",
     margin_bottom="0.5rem",
-    max_width="80%",
+    max_width="70%",
     word_wrap="break-word",
     animation="fadeIn 0.3s ease-in",
+)
+
+css(
+    "#chat_log li.sent",
+    background_color="#3498db",
+    color="white",
+    align_self="flex-end",
+    border_bottom_right_radius="0.3rem",
+)
+
+css(
+    "#chat_log li.received",
+    background_color="#f1f2f6",
+    color="#2c3e50",
+    align_self="flex-start",
+    border_bottom_left_radius="0.3rem",
 )
 
 css(
@@ -137,19 +155,28 @@ def send_message(event):
     txt_message = document.getElementById("txt_message").value
     if not txt_message:
         return
+    # Create sent message immediately
+    create_message(txt_message, "sent")
     ws.send(txt_message)
     document.getElementById("txt_message").value = ""
     document.getElementById("txt_message").focus()
 
 
 @js.function
-def on_message(event):
+def create_message(text, type):
     _li = document.createElement("li")
-    _txt = document.createTextNode(event.data)
+    _li.className = type
+    _txt = document.createTextNode(text)
     _li.appendChild(_txt)
     chat_log = document.getElementById("chat_log")
     chat_log.appendChild(_li)
-    document.getElementById("bottom").scrollIntoView()
+    document.getElementById("bottom").scrollIntoView({"behavior": "smooth"})
+
+
+@js.function
+def on_message(event):
+    if not document.getElementById("txt_message").value:  # If not composing
+        create_message(event.data, "received")
 
 
 @js.script
@@ -194,15 +221,16 @@ async def process_command(command):
     return "COMMAND: {}".format(command)
 
 
-async def broadcast(message):
-    """Broadcast message to all connected clients."""
+async def broadcast(message, sender_queue=None):
+    """Broadcast message to all connected clients except sender."""
     for queue in clients:
-        try:
-            await queue.put(message)
-        except Exception as e:
-            print(f"Error broadcasting message: {e}")
-            if queue in clients:
-                clients.remove(queue)
+        if queue != sender_queue:  # Skip the sender
+            try:
+                await queue.put(message)
+            except Exception as e:
+                print(f"Error broadcasting message: {e}")
+                if queue in clients:
+                    clients.remove(queue)
 
 
 @app.websocket("/ws")
@@ -212,13 +240,12 @@ async def chat_websocket():
     clients.add(queue)
 
     try:
-        # Create producer task
+
         async def producer():
             while True:
                 message = await queue.get()
                 await websocket.send(message)
 
-        # Create consumer task
         async def consumer():
             while True:
                 message = await websocket.receive()
@@ -226,9 +253,9 @@ async def chat_websocket():
                     reply = await process_command(message[1:])
                     await queue.put(reply)
                 else:
-                    await broadcast(message)
+                    # Pass the sender's queue to broadcast
+                    await broadcast(message, queue)
 
-        # Run both producer and consumer
         producer_task = asyncio.create_task(producer())
         consumer_task = asyncio.create_task(consumer())
 
