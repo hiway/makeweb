@@ -155,7 +155,7 @@ body {
     position: relative;
     transition: background-color 0.2s ease;
     border-radius: 8px;
-    overflow: hidden;
+    /* Remove overflow: hidden - it was cutting off the theme icons */
 }
 
 .toolbar button:hover {
@@ -651,6 +651,8 @@ body {
     align-items: center;
     justify-content: center;
     position: relative;
+    width: 24px;
+    height: 24px;
 }
 
 .theme-icon svg {
@@ -660,6 +662,10 @@ body {
         opacity 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     transform: rotate(0deg);
     opacity: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    /* Add rounded corners to icons */
 }
 
 .theme-icon svg[data-active="true"] {
