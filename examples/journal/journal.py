@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 from typing import List, Set, Optional, Dict, Any, Union
 from uuid import uuid4
 from collections import deque
+from graphviz import Digraph
+from typing import List, Set, Dict, Any, Union, Optional, Tuple
 
 
 class Journal:
@@ -620,3 +622,187 @@ class Journal:
                 {"source": s, "target": t, "type": type_} for s, t, type_ in edges
             ],
         }
+
+    async def get_rich_graph(
+        self,
+        block_ids: Union[str, List[str]],
+        max_distance: int = 1,
+        include_refs: bool = True,
+    ) -> Dict[str, Any]:
+        """Generate a rich connection graph for one or more blocks."""
+        if isinstance(block_ids, str):
+            block_ids = [block_ids]
+
+        visited_blocks: Dict[str, Dict[str, Any]] = {}
+        edges: Set[Tuple[str, str, str, str]] = set()
+        visited = set()  # Track visited for traversal
+
+        for start_id in block_ids:
+            queue = deque([(start_id, 0)])
+
+            while queue:
+                current_id, depth = queue.popleft()
+                if current_id in visited:
+                    continue
+
+                if max_distance >= 0 and depth > max_distance:
+                    continue
+
+                visited.add(current_id)
+
+                # Get block info
+                block = await self.get_block(current_id)
+                if not block:
+                    continue
+
+                # Store node info
+                if (
+                    current_id not in visited_blocks
+                    or depth < visited_blocks[current_id]["depth"]
+                ):
+                    children = await self.get_children(current_id)
+                    refs = await self.get_backlinks(current_id) if include_refs else []
+                    parent = await self.get_parent(current_id)
+
+                    visited_blocks[current_id] = {
+                        **block,
+                        "depth": depth,
+                        "ref_count": len(refs),
+                        "child_count": len(children),
+                        "parent_count": 1 if parent else 0,
+                    }
+
+                    # Add edges only within max_distance
+                    if max_distance < 0 or depth < max_distance:
+                        # Add child edges
+                        for child in children:
+                            edges.add((current_id, child["id"], "link", "outgoing"))
+                            if child["id"] not in visited:
+                                queue.append((child["id"], depth + 1))
+
+                        # Add reference edges
+                        if include_refs:
+                            # Outgoing references
+                            async with self.db.execute(
+                                "SELECT target_id FROM block_references WHERE source_id = ?",
+                                (current_id,),
+                            ) as cursor:
+                                refs = await cursor.fetchall()
+                                for ref in refs:
+                                    edges.add(
+                                        (current_id, ref[0], "reference", "outgoing")
+                                    )
+                                    if ref[0] not in visited and (
+                                        max_distance < 0 or depth + 1 <= max_distance
+                                    ):
+                                        queue.append((ref[0], depth + 1))
+
+                            # Incoming references
+                            async with self.db.execute(
+                                "SELECT source_id FROM block_references WHERE target_id = ?",
+                                (current_id,),
+                            ) as cursor:
+                                backrefs = await cursor.fetchall()
+                                for ref in backrefs:
+                                    edges.add(
+                                        (ref[0], current_id, "reference", "incoming")
+                                    )
+                                    if ref[0] not in visited and (
+                                        max_distance < 0 or depth + 1 <= max_distance
+                                    ):
+                                        queue.append((ref[0], depth + 1))
+
+        return {
+            "nodes": list(visited_blocks.values()),
+            "edges": [
+                {"source": s, "target": t, "type": type_, "direction": direction}
+                for s, t, type_, direction in edges
+            ],
+        }
+
+    async def get_graph_svg(
+        self,
+        block_ids: Union[str, List[str]],
+        max_distance: int = 1,
+        include_refs: bool = True,
+        **kwargs,
+    ) -> str:
+        """Generate an SVG visualization of the block graph."""
+        graph_data = await self.get_rich_graph(block_ids, max_distance, include_refs)
+
+        # Create digraph with modern styling
+        dot = Digraph(
+            comment="Block Graph",
+            format="svg",
+            encoding="utf-8",
+            graph_attr={
+                "rankdir": "TB",
+                "splines": "polyline",  # Cleaner lines
+                "bgcolor": "transparent",
+                "charset": "utf-8",
+                "pad": "0.5",
+                "nodesep": "0.75",
+                "ranksep": "0.75",
+            },
+            node_attr={
+                "shape": "rect",
+                "style": "rounded,filled",
+                "fillcolor": "#ffffff",
+                "fontname": "Inter, Arial, sans-serif",
+                "fontsize": "11",
+                "height": "0.4",
+                "width": "0.4",
+                "margin": "0.2,0.1",  # Compact nodes
+                "penwidth": "1.2",
+            },
+            edge_attr={
+                "fontname": "Inter, Arial, sans-serif",
+                "fontsize": "9",
+                "penwidth": "0.8",
+                "arrowsize": "0.7",
+            },
+        )
+
+        # Subtle, modern color palette
+        node_style = {
+            "note": {"fillcolor": "#f8fafc", "color": "#64748b"},
+            "task": {"fillcolor": "#f8fafc", "color": "#64748b"},
+            "default": {"fillcolor": "#f8fafc", "color": "#64748b"},
+        }
+        edge_style = {
+            "link": {"color": "#cbd5e1", "style": "solid"},
+            "reference": {"color": "#e2e8f0", "style": "dashed"},
+            "default": {"color": "#e2e8f0", "style": "dotted"},
+        }
+
+        # Override with custom styles
+        if "node_style" in kwargs:
+            node_style.update(kwargs["node_style"])
+        if "edge_style" in kwargs:
+            edge_style.update(kwargs["edge_style"])
+        max_label_length = kwargs.get("max_label_length", 30)
+
+        # Add nodes with sanitized labels
+        for node in graph_data["nodes"]:
+            # Sanitize label text
+            label = node["content"][:max_label_length]
+            label = label.encode("ascii", "replace").decode("ascii")
+            if len(node["content"]) > max_label_length:
+                label += "..."
+
+            style = node_style.get(node["type"], node_style["default"])
+            tooltip = f"{node['type']}\n{node['content']}"[:100]  # Limit tooltip length
+            dot.node(node["id"], label, **style, tooltip=tooltip)
+
+        # Add edges with minimal labels
+        for edge in graph_data["edges"]:
+            style = edge_style.get(edge["type"], edge_style["default"])
+            dot.edge(edge["source"], edge["target"], **style)
+
+        try:
+            # Try to get SVG with UTF-8 encoding
+            svg_bytes = dot.pipe(encoding="utf-8")
+            return svg_bytes
+        except UnicodeDecodeError:
+            # Fallback to latin1 if UTF-8 fails
+            return dot.pipe().decode("latin1")

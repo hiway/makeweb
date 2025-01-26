@@ -383,3 +383,40 @@ async def test_get_graph(journal):
     # Test subgraph from root
     subgraph = await journal.get_graph(root_id, max_distance=1)
     assert len(subgraph["nodes"]) == 3  # root + 2 children
+
+
+async def test_rich_graph_generation(journal):
+    """Test rich graph generation with various configurations."""
+    # Create a test network
+    root_id = await journal.create_block("Root", "note")
+    child1_id = await journal.create_child_block(root_id, "Child 1", "task")
+    child2_id = await journal.create_child_block(root_id, "Child 2", "note")
+    grandchild_id = await journal.create_child_block(
+        child1_id, "[[Child 2]] reference", "note"
+    )
+
+    # Test single block graph with no references
+    graph = await journal.get_rich_graph(root_id, max_distance=1, include_refs=False)
+    assert len(graph["nodes"]) == 3  # root + 2 children
+    assert len(graph["edges"]) == 2  # 2 parent-child links
+
+    # Test complete graph with references
+    graph = await journal.get_rich_graph(root_id, max_distance=2, include_refs=True)
+    assert len(graph["nodes"]) == 4  # all blocks
+    assert len(graph["edges"]) == 4  # 3 tree links + 1 reference
+
+    # Test node attributes
+    root_node = next(n for n in graph["nodes"] if n["id"] == root_id)
+    assert root_node["child_count"] == 2
+    assert root_node["parent_count"] == 0
+
+    # Verify edge types
+    link_edges = [e for e in graph["edges"] if e["type"] == "link"]
+    ref_edges = [e for e in graph["edges"] if e["type"] == "reference"]
+    assert len(link_edges) == 3  # root->child1, root->child2, child1->grandchild
+    assert len(ref_edges) == 1  # grandchild->child2
+
+    # Test SVG generation
+    svg = await journal.get_graph_svg(root_id, max_distance=1)
+    assert svg.startswith("<?xml")
+    assert "svg" in svg
