@@ -91,11 +91,47 @@ document.addEventListener('DOMContentLoaded', () => {
         return `<img src="${notificationsBtn.querySelector('img').src.replace('notifications', name)}" alt="${name}">`;
     }
 
+    function getNotificationsByType(notifications) {
+        return notifications.reduce((acc, n) => {
+            acc[n.severity] = (acc[n.severity] || 0) + 1;
+            return acc;
+        }, {});
+    }
+
+    function getClearButtonState(notifications) {
+        const counts = getNotificationsByType(notifications);
+
+        if (counts.info > 0 || counts.success > 0) {
+            return {
+                text: 'Clear',
+                filter: n => n.severity === 'error' || n.severity === 'warning'
+            };
+        }
+
+        if (counts.warning > 0) {
+            return {
+                text: 'Clear warnings',
+                filter: n => n.severity === 'error'
+            };
+        }
+
+        if (counts.error > 0) {
+            return {
+                text: 'Clear all',
+                filter: () => false
+            };
+        }
+
+        return null;
+    }
+
     function renderNotifications() {
         const notifications = getNotifications();
+        const clearState = getClearButtonState(notifications);
+
         notificationsList.innerHTML = notifications.length
             ? `
-                <button class="clear-all">Clear All</button>
+                ${clearState ? `<button class="clear-all">${clearState.text}</button>` : ''}
                 ${notifications.map(n => `
                     <div class="notification ${n.severity}" data-id="${n.id}">
                         <div class="notification-header">
@@ -173,9 +209,13 @@ document.addEventListener('DOMContentLoaded', () => {
             renderNotifications();
             updateNotificationIcon();
         } else if (e.target.classList.contains('clear-all')) {
-            saveNotifications([]);
-            renderNotifications();
-            updateNotificationIcon();
+            const notifications = getNotifications();
+            const clearState = getClearButtonState(notifications);
+            if (clearState) {
+                saveNotifications(notifications.filter(clearState.filter));
+                renderNotifications();
+                updateNotificationIcon();
+            }
         }
     });
 
