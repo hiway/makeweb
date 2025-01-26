@@ -127,22 +127,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (counts.info > 0 || counts.success > 0) {
             return {
-                text: 'Clear',
-                filter: n => n.severity === 'error' || n.severity === 'warning'
+                text: 'Clear informational',
+                filter: n => n.severity === 'error' || n.severity === 'warning',
+                clearAll: false
             };
         }
 
         if (counts.warning > 0) {
             return {
                 text: 'Clear warnings',
-                filter: n => n.severity === 'error'
+                filter: n => n.severity === 'error',
+                clearAll: false
             };
         }
 
         if (counts.error > 0) {
             return {
                 text: 'Clear all',
-                filter: () => false
+                filter: () => false,
+                clearAll: true
             };
         }
 
@@ -265,16 +268,26 @@ document.addEventListener('DOMContentLoaded', () => {
             const notifications = getNotifications();
             const clearState = getClearButtonState(notifications);
             if (clearState) {
-                saveNotifications(notifications.filter(clearState.filter));
+                const remainingNotifications = notifications.filter(clearState.filter);
+                saveNotifications(remainingNotifications);
                 renderNotifications();
                 updateNotificationIcon();
+
+                // Only close drawer if all notifications are cleared
+                if (clearState.clearAll) {
+                    notificationsList.classList.add('hidden');
+                    notificationsBtn.classList.remove('drawer-open');
+                }
             }
         }
     });
 
     notificationsBtn.addEventListener('click', () => {
-        notificationsList.classList.toggle('hidden');
-        notificationsBtn.classList.toggle('drawer-open');
+        const isHidden = notificationsList.classList.contains('hidden');
+        if (isHidden) {
+            notificationsList.classList.remove('hidden');
+            notificationsBtn.classList.add('drawer-open');
+        }
         notificationsBtn.classList.remove('unread');
     });
 
@@ -316,9 +329,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Close drawers when clicking elsewhere
     document.addEventListener('click', (e) => {
+        // For notifications, only close if clicking outside AND there are no notifications
         if (!e.target.closest('#notifications') && !e.target.closest('.notifications-list')) {
-            notificationsList.classList.add('hidden');
-            notificationsBtn.classList.remove('drawer-open');
+            const notifications = getNotifications();
+            if (notifications.length === 0) {
+                notificationsList.classList.add('hidden');
+                notificationsBtn.classList.remove('drawer-open');
+            }
         }
         if (!e.target.closest('#preferences') && !e.target.closest('.preferences-list')) {
             preferencesList.classList.add('hidden');
