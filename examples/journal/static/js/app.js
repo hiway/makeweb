@@ -9,6 +9,27 @@ document.addEventListener('DOMContentLoaded', () => {
     // Mobile menu toggle
     menuToggle.addEventListener('click', () => {
         sidebar.classList.toggle('visible');
+        localStorage.setItem('sidebarVisible', sidebar.classList.contains('visible'));
+    });
+
+    // Initialize sidebar state on wide screens
+    function initSidebarState() {
+        const isWideScreen = window.matchMedia('(min-width: 768px)').matches;
+        if (isWideScreen) {
+            const storedState = localStorage.getItem('sidebarVisible');
+            // Show sidebar by default unless explicitly hidden before
+            sidebar.classList.toggle('visible', storedState !== 'false');
+        }
+    }
+
+    // Initialize sidebar on load
+    initSidebarState();
+
+    // Re-initialize on window resize
+    let resizeTimeout;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(initSidebarState, 100);
     });
 
     // Search functionality

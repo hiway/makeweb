@@ -19,10 +19,21 @@
         }
     </script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+    <style>
+        /* Prevent transitions during page load */
+        .initial .sidebar,
+        .initial #menu-toggle,
+        .initial .content {
+            transition: none !important;
+        }
+    </style>
 </head>
 
 <body>
-    <div class="layout">
+    <div class="layout initial">
+        <button id="menu-toggle">
+            {{ svg('menu') }}
+        </button>
         <aside class="sidebar">
             <div class="search-container">
                 <input type="text" id="search" placeholder="Search...">
@@ -51,12 +62,15 @@
         </aside>
 
         <main class="content">
-            <button id="menu-toggle" class="mobile-only">
-                {{ svg('menu') }}
-            </button>
             {% block content %}{% endblock %}
         </main>
     </div>
+    <script>
+        // Remove initial state after a brief delay
+        setTimeout(() => {
+            document.querySelector('.layout').classList.remove('initial');
+        }, 100);
+    </script>
     <script src="{{ url_for('static', filename='js/app.js') }}"></script>
 </body>
 
