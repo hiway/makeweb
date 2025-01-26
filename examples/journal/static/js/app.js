@@ -212,7 +212,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function updateNotificationIcon() {
         const notifications = getNotifications();
         const severity = getHighestSeverity(notifications);
-        const icon = notificationsBtn.querySelector('img');
+        const notificationsBtn = document.getElementById('notifications');
 
         // Remove existing indicator if any
         const existingIndicator = notificationsBtn.querySelector('.notification-indicator');
@@ -226,17 +226,31 @@ document.addEventListener('DOMContentLoaded', () => {
             indicator.className = `notification-indicator ${severity}`;
             notificationsBtn.appendChild(indicator);
         }
-
-        // Reset any existing icon styles
-        icon.style = '';
     }
 
     function addNotification(notification) {
         const notifications = getNotifications();
+        const currentSeverity = notifications.length ? getHighestSeverity(notifications) : 'none';
+        const notificationsBtn = document.getElementById('notifications');
+
+        // Compare severity priorities directly
+        const shouldAnimate = currentSeverity === 'none' ||
+            severityPriority[notification.severity] > severityPriority[currentSeverity];
+
         notifications.unshift(notification);
         saveNotifications(notifications);
         renderNotifications();
         updateNotificationIcon();
+
+        if (shouldAnimate) {
+            notificationsBtn.classList.remove('animate-once');
+            void notificationsBtn.offsetWidth; // Force reflow
+            notificationsBtn.classList.add('animate-once');
+
+            setTimeout(() => {
+                notificationsBtn.classList.remove('animate-once');
+            }, 500);
+        }
     }
 
     notificationsList.addEventListener('click', (e) => {
@@ -260,6 +274,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     notificationsBtn.addEventListener('click', () => {
         notificationsList.classList.toggle('hidden');
+        notificationsBtn.classList.remove('unread');
     });
 
     // Initialize SSE connection

@@ -144,6 +144,17 @@ body {
     cursor: pointer;
     padding: 0.5rem;
     position: relative;
+    transition: background-color 0.2s ease;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.toolbar button:hover {
+    background-color: rgba(127, 127, 127, 0.1);
+}
+
+.toolbar button:active {
+    background-color: rgba(127, 127, 127, 0.2);
 }
 
 .toolbar button img {
@@ -605,3 +616,38 @@ body {
     transform: rotate(-90deg);
     opacity: 0;
 }
+
+/* Notifications button specific styles */
+#notifications {
+    transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1.2);
+    transform-origin: center;
+}
+
+#notifications:active {
+    transform: scale(0.85) rotate(-8deg);
+}
+
+#notifications .icon {
+    transform-origin: center;
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+#notifications:hover .icon {
+    transform: rotate(8deg);
+}
+
+#notifications.animate-once .icon {
+    animation: bell-ring 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+@keyframes bell-ring {
+    0%, 100% { transform: rotate(0); }
+    15% { transform: rotate(15deg); }
+    30% { transform: rotate(-15deg); }
+    45% { transform: rotate(12deg); }
+    60% { transform: rotate(-12deg); }
+    75% { transform: rotate(8deg); }
+    90% { transform: rotate(-8deg); }
+}
+
+/* Remove the old attention animation */
