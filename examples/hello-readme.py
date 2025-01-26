@@ -1,18 +1,6 @@
 from flask import Flask, Response
-from makeweb import (
-    Doc,
-    CSS,
-    JS,
-)
-from makeweb.html import (
-    head,
-    title,
-    style,
-    script,
-    body,
-    h1,
-    button,
-)
+from makeweb import Doc, CSS, JS
+from makeweb.html import *
 from makeweb.javascript import document
 
 app = Flask(__name__)
