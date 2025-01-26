@@ -14,10 +14,8 @@ from makeweb.html import (
     button,
     _input,
     ul,
-    li,
     div,
     meta,
-    link,
 )
 
 META = {
